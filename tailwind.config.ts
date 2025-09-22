@@ -21,7 +21,22 @@ export default {
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
+          light: "hsl(var(--primary-light))",
+          dark: "hsl(var(--primary-dark))",
           foreground: "hsl(var(--primary-foreground))",
+        },
+        construction: {
+          DEFAULT: "hsl(var(--construction))",
+          light: "hsl(var(--construction-light))",
+          dark: "hsl(var(--construction-dark))",
+        },
+        income: {
+          DEFAULT: "hsl(var(--income))",
+          light: "hsl(var(--income-light))",
+        },
+        expense: {
+          DEFAULT: "hsl(var(--expense))",
+          light: "hsl(var(--expense-light))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
