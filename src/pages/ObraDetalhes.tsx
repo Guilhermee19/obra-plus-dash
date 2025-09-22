@@ -108,12 +108,21 @@ const ObraDetalhes = () => {
   const obra = mockObras.find(o => o.id === Number(id));
   const transacoes = mockTransacoes.filter(t => t.obraId === Number(id));
 
-  const filteredTransacoes = transacoes.filter(transacao => {
-    const matchesSearch = transacao.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transacao.categoria.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTipo = tipoFilter === "Todos" || transacao.tipo === tipoFilter;
-    return matchesSearch && matchesTipo;
-  });
+  const filteredEntradas = transacoes
+    .filter(t => t.tipo === "Entrada")
+    .filter(transacao => {
+      const matchesSearch = transacao.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           transacao.categoria.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesSearch;
+    });
+
+  const filteredSaidas = transacoes
+    .filter(t => t.tipo === "Saída")
+    .filter(transacao => {
+      const matchesSearch = transacao.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           transacao.categoria.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesSearch;
+    });
 
   const totalEntradas = transacoes
     .filter(t => t.tipo === "Entrada")
@@ -136,15 +145,75 @@ const ObraDetalhes = () => {
     );
   }
 
-  const getTipoColor = (tipo: string) => {
-    return tipo === "Entrada" ? "text-income" : "text-expense";
-  };
-
-  const getTipoBadge = (tipo: string) => {
-    return tipo === "Entrada" 
-      ? "bg-income/10 text-income border-income/20" 
-      : "bg-expense/10 text-expense border-expense/20";
-  };
+  const renderTransacaoTable = (transacoes: typeof mockTransacoes, tipo: "Entrada" | "Saída", color: string) => (
+    <Card className="min-w-[400px] flex-1">
+      <CardHeader className="pb-3">
+        <CardTitle className={`text-lg flex items-center gap-2 ${color}`}>
+          {tipo === "Entrada" ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
+          {tipo}s ({transacoes.length})
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-24">Data</TableHead>
+                <TableHead className="min-w-32">Categoria</TableHead>
+                <TableHead className="min-w-48">Descrição</TableHead>
+                <TableHead className="text-right w-32">Valor</TableHead>
+                <TableHead className="text-center w-24">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {transacoes.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">
+                    <p className="text-muted-foreground">Nenhuma {tipo.toLowerCase()} encontrada</p>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                transacoes.map((transacao) => (
+                  <TableRow key={transacao.id}>
+                    <TableCell className="font-medium text-xs">{transacao.data}</TableCell>
+                    <TableCell className="text-sm">
+                      <Badge variant="outline">
+                        {transacao.categoria}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm">{transacao.descricao}</TableCell>
+                    <TableCell className={`text-right font-bold text-sm ${color}`}>
+                      {formatCurrency(transacao.valor)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-center gap-1">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10">
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        {transacoes.length > 0 && (
+          <div className={`border-t p-4 ${tipo === "Entrada" ? "bg-income/5" : "bg-expense/5"}`}>
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium">Total {tipo}s:</span>
+              <span className={`text-lg font-bold ${color}`}>
+                {formatCurrency(transacoes.reduce((sum, t) => sum + t.valor, 0))}
+              </span>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -259,89 +328,51 @@ const ObraDetalhes = () => {
             className="pl-10"
           />
         </div>
-        <div className="flex gap-2">
-          {["Todos", "Entrada", "Saída"].map((tipo) => (
-            <Button
-              key={tipo}
-              variant={tipoFilter === tipo ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTipoFilter(tipo)}
-              className="whitespace-nowrap"
-            >
-              {tipo}
-            </Button>
-          ))}
-        </div>
       </div>
 
-      {/* Tabela de Transações */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Controle de Entradas e Saídas</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Categoria</TableHead>
-                  <TableHead className="hidden sm:table-cell">Descrição</TableHead>
-                  <TableHead className="text-right">Valor</TableHead>
-                  <TableHead className="text-center">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTransacoes.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      <p className="text-muted-foreground">Nenhuma transação encontrada</p>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredTransacoes.map((transacao) => (
-                    <TableRow key={transacao.id}>
-                      <TableCell className="font-medium">{transacao.data}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={getTipoBadge(transacao.tipo)}>
-                          {transacao.tipo}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{transacao.categoria}</TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        {transacao.descricao}
-                      </TableCell>
-                      <TableCell className={`text-right font-bold ${getTipoColor(transacao.tipo)}`}>
-                        {formatCurrency(transacao.valor)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex justify-center gap-1">
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+      {/* Controle de Entradas e Saídas */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Controle Financeiro</h2>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="bg-income/10 text-income border-income/20">
+              <Plus className="h-4 w-4 mr-1" />
+              Nova Entrada
+            </Button>
+            <Button variant="outline" size="sm" className="bg-expense/10 text-expense border-expense/20">
+              <Plus className="h-4 w-4 mr-1" />
+              Nova Saída
+            </Button>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Footer com Total */}
-      {filteredTransacoes.length > 0 && (
-        <div className="flex justify-center">
-          <p className="text-muted-foreground text-sm">
-            Mostrando {filteredTransacoes.length} transações
-          </p>
         </div>
-      )}
+
+        {/* Container com scroll horizontal para as tabelas */}
+        <div className="overflow-x-auto pb-4">
+          <div className="flex gap-6 min-w-max">
+            {/* Tabela de Entradas */}
+            {renderTransacaoTable(filteredEntradas, "Entrada", "text-income")}
+            
+            {/* Tabela de Saídas */}
+            {renderTransacaoTable(filteredSaidas, "Saída", "text-expense")}
+          </div>
+        </div>
+
+        {/* Resumo das Tabelas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
+          <div className="text-center p-4 bg-income/5 rounded-lg">
+            <p className="text-sm text-muted-foreground mb-1">Total de Entradas Filtradas</p>
+            <p className="text-lg font-bold text-income">
+              {filteredEntradas.length} transações
+            </p>
+          </div>
+          <div className="text-center p-4 bg-expense/5 rounded-lg">
+            <p className="text-sm text-muted-foreground mb-1">Total de Saídas Filtradas</p>
+            <p className="text-lg font-bold text-expense">
+              {filteredSaidas.length} transações
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
