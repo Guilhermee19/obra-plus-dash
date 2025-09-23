@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { 
   Table, 
   TableBody, 
@@ -23,6 +25,18 @@ import {
   MapPin,
   User
 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+// Schema para validação do formulário
+const transacaoSchema = z.object({
+  data: z.string().min(1, "Data é obrigatória"),
+  descricao: z.string().min(1, "Descrição é obrigatória"),
+  valor: z.string().min(1, "Valor é obrigatório"),
+});
+
+type TransacaoFormData = z.infer<typeof transacaoSchema>;
 
 // Dados mockados da obra
 const mockObras = [
@@ -40,12 +54,11 @@ const mockObras = [
 ];
 
 // Dados mockados das transações
-const mockTransacoes = [
+const mockTransacoesIniciais = [
   {
     id: 1,
     data: "15/03/2024",
     tipo: "Entrada",
-    categoria: "Pagamento Cliente",
     descricao: "Pagamento parcial - 2ª parcela",
     valor: 15000,
     obraId: 1
@@ -54,7 +67,6 @@ const mockTransacoes = [
     id: 2,
     data: "18/03/2024",
     tipo: "Saída",
-    categoria: "Material",
     descricao: "Cimento, areia e brita",
     valor: 3500,
     obraId: 1
@@ -63,7 +75,6 @@ const mockTransacoes = [
     id: 3,
     data: "20/03/2024",
     tipo: "Saída",
-    categoria: "Funcionários",
     descricao: "Salários quinzenal",
     valor: 8500,
     obraId: 1
@@ -72,7 +83,6 @@ const mockTransacoes = [
     id: 4,
     data: "22/03/2024",
     tipo: "Entrada",
-    categoria: "Pagamento Cliente",
     descricao: "Pagamento extra por mudanças",
     valor: 5000,
     obraId: 1
@@ -81,7 +91,6 @@ const mockTransacoes = [
     id: 5,
     data: "25/03/2024",
     tipo: "Saída",
-    categoria: "Equipamentos",
     descricao: "Aluguel betoneira",
     valor: 800,
     obraId: 1
@@ -90,7 +99,6 @@ const mockTransacoes = [
     id: 6,
     data: "28/03/2024",
     tipo: "Saída",
-    categoria: "Impostos",
     descricao: "ISS sobre serviços",
     valor: 1200,
     obraId: 1
@@ -101,36 +109,66 @@ const ObraDetalhes = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [tipoFilter, setTipoFilter] = useState("Todos");
+  const [transacoes, setTransacoes] = useState(mockTransacoesIniciais);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [tipoTransacao, setTipoTransacao] = useState<"Entrada" | "Saída">("Entrada");
+
+  const form = useForm<TransacaoFormData>({
+    resolver: zodResolver(transacaoSchema),
+    defaultValues: {
+      data: "",
+      descricao: "",
+      valor: "",
+    },
+  });
 
   const obra = mockObras.find(o => o.id === Number(id));
-  const transacoes = mockTransacoes.filter(t => t.obraId === Number(id));
+  const transacoesObra = transacoes.filter(t => t.obraId === Number(id));
 
-  const filteredEntradas = transacoes
+  const filteredEntradas = transacoesObra
     .filter(t => t.tipo === "Entrada")
     .filter(transacao => {
-      const matchesSearch = transacao.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           transacao.categoria.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = transacao.descricao.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesSearch;
     });
 
-  const filteredSaidas = transacoes
+  const filteredSaidas = transacoesObra
     .filter(t => t.tipo === "Saída")
     .filter(transacao => {
-      const matchesSearch = transacao.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           transacao.categoria.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = transacao.descricao.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesSearch;
     });
 
-  const totalEntradas = transacoes
+  const totalEntradas = transacoesObra
     .filter(t => t.tipo === "Entrada")
     .reduce((sum, t) => sum + t.valor, 0);
 
-  const totalSaidas = transacoes
+  const totalSaidas = transacoesObra
     .filter(t => t.tipo === "Saída")
     .reduce((sum, t) => sum + t.valor, 0);
 
   const saldo = totalEntradas - totalSaidas;
+
+  const onSubmit = (data: TransacaoFormData) => {
+    const novaTransacao = {
+      id: Math.max(...transacoes.map(t => t.id)) + 1,
+      data: data.data,
+      tipo: tipoTransacao,
+      descricao: data.descricao,
+      valor: parseFloat(data.valor.replace(/[^\d,]/g, '').replace(',', '.')),
+      obraId: Number(id)
+    };
+    
+    setTransacoes([...transacoes, novaTransacao]);
+    form.reset();
+    setIsDialogOpen(false);
+  };
+
+  const handleNovaTransacao = (tipo: "Entrada" | "Saída") => {
+    setTipoTransacao(tipo);
+    setIsDialogOpen(true);
+    form.reset();
+  };
 
   if (!obra) {
     return (
@@ -143,7 +181,7 @@ const ObraDetalhes = () => {
     );
   }
 
-  const renderTransacaoTable = (transacoes: typeof mockTransacoes, tipo: "Entrada" | "Saída", color: string) => (
+  const renderTransacaoTable = (transacoes: typeof mockTransacoesIniciais, tipo: "Entrada" | "Saída", color: string) => (
     <Card className="min-w-[350px] flex-1 shadow-sm border-border">
       <CardHeader className="pb-2 px-3 py-2 bg-muted/30 border-b">
         <CardTitle className={`text-sm flex items-center gap-2 ${color} font-medium`}>
@@ -157,7 +195,6 @@ const ObraDetalhes = () => {
             <TableHeader className="bg-muted/50 sticky top-0">
               <TableRow className="border-border hover:bg-muted/50">
                 <TableHead className="h-8 px-2 text-xs font-medium border-r border-border">Data</TableHead>
-                <TableHead className="h-8 px-2 text-xs font-medium border-r border-border">Categoria</TableHead>
                 <TableHead className="h-8 px-2 text-xs font-medium border-r border-border">Descrição</TableHead>
                 <TableHead className="h-8 px-2 text-xs font-medium text-right">Valor</TableHead>
               </TableRow>
@@ -165,7 +202,7 @@ const ObraDetalhes = () => {
             <TableBody>
               {transacoes.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
                     Nenhuma {tipo.toLowerCase()} encontrada
                   </TableCell>
                 </TableRow>
@@ -176,11 +213,6 @@ const ObraDetalhes = () => {
                     className={`border-border hover:bg-muted/30 ${index % 2 === 0 ? 'bg-background' : 'bg-muted/10'}`}
                   >
                     <TableCell className="h-8 px-2 text-xs border-r border-border font-mono">{transacao.data}</TableCell>
-                    <TableCell className="h-8 px-2 text-xs border-r border-border">
-                      <Badge variant="outline" className="text-[10px] px-1 py-0 h-5">
-                        {transacao.categoria}
-                      </Badge>
-                    </TableCell>
                     <TableCell className="h-8 px-2 text-xs border-r border-border max-w-[200px] truncate" title={transacao.descricao}>
                       {transacao.descricao}
                     </TableCell>
@@ -234,7 +266,7 @@ const ObraDetalhes = () => {
             <p className="text-muted-foreground">Controle Financeiro</p>
           </div>
         </div>
-        <Button className="bg-gradient-to-r from-primary to-construction text-white">
+        <Button className="bg-gradient-to-r from-primary to-construction text-white" onClick={() => handleNovaTransacao("Entrada")}>
           <Plus className="h-4 w-4 mr-2" />
           Nova Transação
         </Button>
@@ -306,7 +338,7 @@ const ObraDetalhes = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Buscar por descrição ou categoria..."
+            placeholder="Buscar por descrição..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -319,11 +351,11 @@ const ObraDetalhes = () => {
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Controle Financeiro</h2>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="bg-income/10 text-income border-income/20">
+            <Button variant="outline" size="sm" className="bg-income/10 text-income border-income/20" onClick={() => handleNovaTransacao("Entrada")}>
               <Plus className="h-4 w-4 mr-1" />
               Nova Entrada
             </Button>
-            <Button variant="outline" size="sm" className="bg-expense/10 text-expense border-expense/20">
+            <Button variant="outline" size="sm" className="bg-expense/10 text-expense border-expense/20" onClick={() => handleNovaTransacao("Saída")}>
               <Plus className="h-4 w-4 mr-1" />
               Nova Saída
             </Button>
@@ -359,6 +391,81 @@ const ObraDetalhes = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal para adicionar transação */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nova {tipoTransacao}</DialogTitle>
+          </DialogHeader>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="data"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Data</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="descricao"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descrição</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Descreva a transação..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="valor"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Valor (R$)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="0,00" 
+                        {...field}
+                        onChange={(e) => {
+                          // Formatação básica de valor monetário
+                          let value = e.target.value.replace(/\D/g, '');
+                          if (value) {
+                            value = (parseFloat(value) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                          }
+                          field.onChange(value);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" className={`${tipoTransacao === "Entrada" ? "bg-income hover:bg-income/90" : "bg-expense hover:bg-expense/90"} text-white`}>
+                  Adicionar {tipoTransacao}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
       </div>
     </div>
   );
