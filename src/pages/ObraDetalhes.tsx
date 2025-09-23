@@ -16,8 +16,6 @@ import {
   Plus, 
   Search, 
   ArrowLeft,
-  Edit,
-  Trash2,
   TrendingUp,
   TrendingDown,
   DollarSign,
@@ -146,54 +144,48 @@ const ObraDetalhes = () => {
   }
 
   const renderTransacaoTable = (transacoes: typeof mockTransacoes, tipo: "Entrada" | "Saída", color: string) => (
-    <Card className="min-w-[400px] flex-1">
-      <CardHeader className="pb-3">
-        <CardTitle className={`text-lg flex items-center gap-2 ${color}`}>
-          {tipo === "Entrada" ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
+    <Card className="min-w-[350px] flex-1 shadow-sm border-border">
+      <CardHeader className="pb-2 px-3 py-2 bg-muted/30 border-b">
+        <CardTitle className={`text-sm flex items-center gap-2 ${color} font-medium`}>
+          {tipo === "Entrada" ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
           {tipo}s ({transacoes.length})
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-24">Data</TableHead>
-                <TableHead className="min-w-32">Categoria</TableHead>
-                <TableHead className="min-w-48">Descrição</TableHead>
-                <TableHead className="text-right w-32">Valor</TableHead>
-                <TableHead className="text-center w-24">Ações</TableHead>
+        <div className="overflow-auto max-h-[400px]">
+          <Table className="text-xs">
+            <TableHeader className="bg-muted/50 sticky top-0">
+              <TableRow className="border-border hover:bg-muted/50">
+                <TableHead className="h-8 px-2 text-xs font-medium border-r border-border">Data</TableHead>
+                <TableHead className="h-8 px-2 text-xs font-medium border-r border-border">Categoria</TableHead>
+                <TableHead className="h-8 px-2 text-xs font-medium border-r border-border">Descrição</TableHead>
+                <TableHead className="h-8 px-2 text-xs font-medium text-right">Valor</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {transacoes.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">
-                    <p className="text-muted-foreground">Nenhuma {tipo.toLowerCase()} encontrada</p>
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                    Nenhuma {tipo.toLowerCase()} encontrada
                   </TableCell>
                 </TableRow>
               ) : (
-                transacoes.map((transacao) => (
-                  <TableRow key={transacao.id}>
-                    <TableCell className="font-medium text-xs">{transacao.data}</TableCell>
-                    <TableCell className="text-sm">
-                      <Badge variant="outline">
+                transacoes.map((transacao, index) => (
+                  <TableRow 
+                    key={transacao.id} 
+                    className={`border-border hover:bg-muted/30 ${index % 2 === 0 ? 'bg-background' : 'bg-muted/10'}`}
+                  >
+                    <TableCell className="h-8 px-2 text-xs border-r border-border font-mono">{transacao.data}</TableCell>
+                    <TableCell className="h-8 px-2 text-xs border-r border-border">
+                      <Badge variant="outline" className="text-[10px] px-1 py-0 h-5">
                         {transacao.categoria}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm">{transacao.descricao}</TableCell>
-                    <TableCell className={`text-right font-bold text-sm ${color}`}>
-                      {formatCurrency(transacao.valor)}
+                    <TableCell className="h-8 px-2 text-xs border-r border-border max-w-[200px] truncate" title={transacao.descricao}>
+                      {transacao.descricao}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex justify-center gap-1">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10">
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
+                    <TableCell className={`h-8 px-2 text-xs text-right font-mono font-medium ${color}`}>
+                      {formatCurrency(transacao.valor)}
                     </TableCell>
                   </TableRow>
                 ))
@@ -202,10 +194,10 @@ const ObraDetalhes = () => {
           </Table>
         </div>
         {transacoes.length > 0 && (
-          <div className={`border-t p-4 ${tipo === "Entrada" ? "bg-income/5" : "bg-expense/5"}`}>
+          <div className={`border-t-2 border-border p-2 ${tipo === "Entrada" ? "bg-income/5" : "bg-expense/5"} sticky bottom-0`}>
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Total {tipo}s:</span>
-              <span className={`text-lg font-bold ${color}`}>
+              <span className="text-xs font-medium">Total:</span>
+              <span className={`text-sm font-bold font-mono ${color}`}>
                 {formatCurrency(transacoes.reduce((sum, t) => sum + t.valor, 0))}
               </span>
             </div>
@@ -223,7 +215,8 @@ const ObraDetalhes = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -279,39 +272,30 @@ const ObraDetalhes = () => {
       </Card>
 
       {/* Resumo Financeiro */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 md:gap-4">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Entradas</p>
-                <p className="text-2xl font-bold text-income">{formatCurrency(totalEntradas)}</p>
-              </div>
-              <TrendingUp className="h-8 w-8 text-income" />
+          <CardContent className="p-3 md:p-4">
+            <div className="text-center">
+              <p className="text-xs md:text-sm text-muted-foreground mb-1">Entradas</p>
+              <p className="text-sm md:text-xl font-bold text-income">{formatCurrency(totalEntradas)}</p>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Saídas</p>
-                <p className="text-2xl font-bold text-expense">{formatCurrency(totalSaidas)}</p>
-              </div>
-              <TrendingDown className="h-8 w-8 text-expense" />
+          <CardContent className="p-3 md:p-4">
+            <div className="text-center">
+              <p className="text-xs md:text-sm text-muted-foreground mb-1">Saídas</p>
+              <p className="text-sm md:text-xl font-bold text-expense">{formatCurrency(totalSaidas)}</p>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Saldo Atual</p>
-                <p className={`text-2xl font-bold ${saldo >= 0 ? 'text-income' : 'text-expense'}`}>
-                  {formatCurrency(saldo)}
-                </p>
-              </div>
-              <DollarSign className="h-8 w-8 text-primary" />
+          <CardContent className="p-3 md:p-4">
+            <div className="text-center">
+              <p className="text-xs md:text-sm text-muted-foreground mb-1">Saldo</p>
+              <p className={`text-sm md:text-xl font-bold ${saldo >= 0 ? 'text-income' : 'text-expense'}`}>
+                {formatCurrency(saldo)}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -347,31 +331,34 @@ const ObraDetalhes = () => {
         </div>
 
         {/* Container com scroll horizontal para as tabelas */}
-        <div className="overflow-x-auto pb-4">
-          <div className="flex gap-6 min-w-max">
-            {/* Tabela de Entradas */}
-            {renderTransacaoTable(filteredEntradas, "Entrada", "text-income")}
-            
-            {/* Tabela de Saídas */}
-            {renderTransacaoTable(filteredSaidas, "Saída", "text-expense")}
+        <div className="w-full">
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+            <div className="flex gap-4 min-w-max pb-2">
+              {/* Tabela de Entradas */}
+              {renderTransacaoTable(filteredEntradas, "Entrada", "text-income")}
+              
+              {/* Tabela de Saídas */}
+              {renderTransacaoTable(filteredSaidas, "Saída", "text-expense")}
+            </div>
           </div>
         </div>
 
         {/* Resumo das Tabelas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
-          <div className="text-center p-4 bg-income/5 rounded-lg">
-            <p className="text-sm text-muted-foreground mb-1">Total de Entradas Filtradas</p>
-            <p className="text-lg font-bold text-income">
-              {filteredEntradas.length} transações
+        <div className="grid grid-cols-2 gap-2 md:gap-4 pt-2 border-t">
+          <div className="text-center p-2 md:p-3 bg-income/5 rounded-lg">
+            <p className="text-xs text-muted-foreground mb-1">Entradas Filtradas</p>
+            <p className="text-sm font-bold text-income">
+              {filteredEntradas.length} itens
             </p>
           </div>
-          <div className="text-center p-4 bg-expense/5 rounded-lg">
-            <p className="text-sm text-muted-foreground mb-1">Total de Saídas Filtradas</p>
-            <p className="text-lg font-bold text-expense">
-              {filteredSaidas.length} transações
+          <div className="text-center p-2 md:p-3 bg-expense/5 rounded-lg">
+            <p className="text-xs text-muted-foreground mb-1">Saídas Filtradas</p>
+            <p className="text-sm font-bold text-expense">
+              {filteredSaidas.length} itens
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
