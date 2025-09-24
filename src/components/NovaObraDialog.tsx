@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -102,226 +101,238 @@ export function NovaObraDialog({ open, onOpenChange, onSubmit }: NovaObraDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Nova Obra</DialogTitle>
+      <DialogContent className="w-[95vw] max-w-4xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col p-3 sm:p-6">
+        <DialogHeader className="flex-shrink-0 pb-2 sm:pb-4">
+          <DialogTitle className="text-lg sm:text-xl">Nova Obra</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            {/* Informações Básicas */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Informações Básicas</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="nome"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome da Obra</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ex: Residencial Vila Nova" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col gap-4 flex-1 overflow-hidden">
+            <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-6 pr-1 sm:pr-2">
+              {/* Informações Básicas */}
+              <Card>
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="text-base sm:text-lg">Informações Básicas</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+                  <FormField
+                    control={form.control}
+                    name="nome"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Nome da Obra</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ex: Residencial Vila Nova" {...field} className="text-sm" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="cliente"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cliente</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nome do cliente" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="cliente"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Cliente</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nome do cliente" {...field} className="text-sm" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="localizacao"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Localização</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ex: Zona Sul, SP" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="localizacao"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Localização</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ex: Zona Sul, SP" {...field} className="text-sm" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="responsavel"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Responsável</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nome do responsável" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="responsavel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Responsável</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nome do responsável" {...field} className="text-sm" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="dataInicio"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Data de Início</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="dataInicio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Data de Início</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} className="text-sm" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="dataPrevista"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Data Prevista</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
+                  <FormField
+                    control={form.control}
+                    name="dataPrevista"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Data Prevista</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} className="text-sm" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
 
-            {/* Configuração das Tabelas */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Table className="h-5 w-5" />
-                  Configuração das Tabelas Financeiras
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Tabelas de Entrada */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-base font-medium text-income">Tabelas de Entrada</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => adicionarTabela("entrada")}
-                      className="text-income border-income/20 hover:bg-income/10"
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Adicionar
-                    </Button>
+              {/* Configuração das Tabelas */}
+              <Card>
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                    <Table className="h-4 w-4 sm:h-5 sm:w-5" />
+                    Configuração das Tabelas Financeiras
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 sm:space-y-6">
+                  {/* Tabelas de Entrada */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm sm:text-base font-medium text-income">Tabelas de Entrada</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => adicionarTabela("entrada")}
+                        className="text-income border-income/20 hover:bg-income/10 text-xs sm:text-sm px-2 sm:px-3"
+                      >
+                        <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                        <span className="hidden sm:inline">Adicionar</span>
+                        <span className="sm:hidden">+</span>
+                      </Button>
+                    </div>
+                    
+                    <div className="grid gap-2 sm:gap-3">
+                      {configuracaoTabelas.entradas.map((tabela, index) => (
+                        <div key={tabela.id} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 border rounded-lg bg-income/5">
+                          <Badge variant="secondary" className="bg-income/20 text-income text-xs flex-shrink-0">
+                            E{index + 1}
+                          </Badge>
+                          <Input
+                            value={tabela.nome}
+                            onChange={(e) => atualizarNomeTabela("entrada", tabela.id, e.target.value)}
+                            placeholder="Nome da tabela de entrada"
+                            className="flex-1 text-sm"
+                          />
+                          {configuracaoTabelas.entradas.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removerTabela("entrada", tabela.id)}
+                              className="text-expense border-expense/20 hover:bg-expense/10 p-1 sm:p-2 flex-shrink-0"
+                            >
+                              <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  
-                  <div className="grid gap-3">
-                    {configuracaoTabelas.entradas.map((tabela, index) => (
-                      <div key={tabela.id} className="flex items-center gap-3 p-3 border rounded-lg bg-income/5">
-                        <Badge variant="secondary" className="bg-income/20 text-income">
-                          E{index + 1}
+
+                  {/* Tabelas de Saída */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm sm:text-base font-medium text-expense">Tabelas de Saída</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => adicionarTabela("saida")}
+                        className="text-expense border-expense/20 hover:bg-expense/10 text-xs sm:text-sm px-2 sm:px-3"
+                      >
+                        <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                        <span className="hidden sm:inline">Adicionar</span>
+                        <span className="sm:hidden">+</span>
+                      </Button>
+                    </div>
+                    
+                    <div className="grid gap-2 sm:gap-3">
+                      {configuracaoTabelas.saidas.map((tabela, index) => (
+                        <div key={tabela.id} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 border rounded-lg bg-expense/5">
+                          <Badge variant="secondary" className="bg-expense/20 text-expense text-xs flex-shrink-0">
+                            S{index + 1}
+                          </Badge>
+                          <Input
+                            value={tabela.nome}
+                            onChange={(e) => atualizarNomeTabela("saida", tabela.id, e.target.value)}
+                            placeholder="Nome da tabela de saída"
+                            className="flex-1 text-sm"
+                          />
+                          {configuracaoTabelas.saidas.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removerTabela("saida", tabela.id)}
+                              className="text-expense border-expense/20 hover:bg-expense/10 p-1 sm:p-2 flex-shrink-0"
+                            >
+                              <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Preview */}
+                  <div className="p-3 sm:p-4 bg-muted/50 rounded-lg">
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-2">Preview da configuração:</p>
+                    <div className="flex flex-wrap gap-1 sm:gap-2">
+                      {configuracaoTabelas.entradas.map((tabela, index) => (
+                        <Badge key={tabela.id} variant="secondary" className="bg-income/20 text-income text-xs">
+                          {tabela.nome}
                         </Badge>
-                        <Input
-                          value={tabela.nome}
-                          onChange={(e) => atualizarNomeTabela("entrada", tabela.id, e.target.value)}
-                          placeholder="Nome da tabela de entrada"
-                          className="flex-1"
-                        />
-                        {configuracaoTabelas.entradas.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removerTabela("entrada", tabela.id)}
-                            className="text-expense border-expense/20 hover:bg-expense/10"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Tabelas de Saída */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-base font-medium text-expense">Tabelas de Saída</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => adicionarTabela("saida")}
-                      className="text-expense border-expense/20 hover:bg-expense/10"
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Adicionar
-                    </Button>
-                  </div>
-                  
-                  <div className="grid gap-3">
-                    {configuracaoTabelas.saidas.map((tabela, index) => (
-                      <div key={tabela.id} className="flex items-center gap-3 p-3 border rounded-lg bg-expense/5">
-                        <Badge variant="secondary" className="bg-expense/20 text-expense">
-                          S{index + 1}
+                      ))}
+                      {configuracaoTabelas.saidas.map((tabela, index) => (
+                        <Badge key={tabela.id} variant="secondary" className="bg-expense/20 text-expense text-xs">
+                          {tabela.nome}
                         </Badge>
-                        <Input
-                          value={tabela.nome}
-                          onChange={(e) => atualizarNomeTabela("saida", tabela.id, e.target.value)}
-                          placeholder="Nome da tabela de saída"
-                          className="flex-1"
-                        />
-                        {configuracaoTabelas.saidas.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removerTabela("saida", tabela.id)}
-                            className="text-expense border-expense/20 hover:bg-expense/10"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                </CardContent>
+              </Card>
+            </div>
 
-                {/* Preview */}
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-2">Preview da configuração:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {configuracaoTabelas.entradas.map((tabela, index) => (
-                      <Badge key={tabela.id} variant="secondary" className="bg-income/20 text-income">
-                        {tabela.nome}
-                      </Badge>
-                    ))}
-                    {configuracaoTabelas.saidas.map((tabela, index) => (
-                      <Badge key={tabela.id} variant="secondary" className="bg-expense/20 text-expense">
-                        {tabela.nome}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <div className="flex justify-end gap-2 pt-3 sm:pt-4 border-t flex-shrink-0">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+                className="text-sm px-3 sm:px-4"
+              >
                 Cancelar
               </Button>
-              <Button type="submit" className="bg-gradient-to-r from-primary to-construction text-white">
+              <Button 
+                type="submit" 
+                className="bg-gradient-to-r from-primary to-construction text-white text-sm px-3 sm:px-4"
+              >
                 Criar Obra
               </Button>
             </div>
