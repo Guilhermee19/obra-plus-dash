@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { NovaObraDialog } from "@/components/NovaObraDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,6 +82,12 @@ const Obras = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
+  const [isNovaObraOpen, setIsNovaObraOpen] = useState(false);
+
+  const handleNovaObra = (data: any) => {
+    console.log("Nova obra criada:", data);
+    // Aqui você implementaria a lógica para salvar a obra
+  };
 
   const filteredObras = mockObras.filter(obra => {
     const matchesSearch = obra.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -109,7 +116,10 @@ const Obras = () => {
           <h1 className="text-2xl font-bold text-foreground">Gestão de Obras</h1>
           <p className="text-muted-foreground">Controle e monitore todas as suas obras</p>
         </div>
-        <Button className="bg-gradient-to-r from-primary to-construction text-white shadow-lg hover:shadow-xl transition-all">
+        <Button 
+          className="bg-gradient-to-r from-primary to-construction text-white shadow-lg hover:shadow-xl transition-all"
+          onClick={() => setIsNovaObraOpen(true)}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Nova Obra
         </Button>
@@ -256,10 +266,17 @@ const Obras = () => {
       {filteredObras.length > 0 && (
         <div className="flex justify-center">
           <p className="text-muted-foreground text-sm">
-            Mostrando {filteredObras.length} de {mockObras.length} obras
+          Mostrando {filteredObras.length} de {mockObras.length} obras
           </p>
         </div>
       )}
+
+      {/* Modal Nova Obra */}
+      <NovaObraDialog
+        open={isNovaObraOpen}
+        onOpenChange={setIsNovaObraOpen}
+        onSubmit={handleNovaObra}
+      />
     </div>
   );
 };

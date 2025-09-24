@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { 
@@ -28,18 +29,20 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Obra, Transacao, ConfiguracaoTabelas } from "@/types/obra";
 
 // Schema para validação do formulário
 const transacaoSchema = z.object({
   data: z.string().min(1, "Data é obrigatória"),
   descricao: z.string().min(1, "Descrição é obrigatória"),
   valor: z.string().min(1, "Valor é obrigatório"),
+  tabelaId: z.string().min(1, "Tabela é obrigatória"),
 });
 
 type TransacaoFormData = z.infer<typeof transacaoSchema>;
 
-// Dados mockados da obra
-const mockObras = [
+// Dados mockados das obras com configuração de tabelas
+const mockObras: Obra[] = [
   {
     id: 1,
     nome: "Residencial Vila Nova",
@@ -49,19 +52,31 @@ const mockObras = [
     localizacao: "Zona Sul, SP",
     dataInicio: "15/01/2024",
     dataPrevista: "30/06/2024",
-    responsavel: "Carlos Silva"
+    responsavel: "Carlos Silva",
+    configuracaoTabelas: {
+      entradas: [
+        { id: "e1", nome: "Pagamentos Cliente", tipo: "entrada" },
+        { id: "e2", nome: "Recursos Extras", tipo: "entrada" }
+      ],
+      saidas: [
+        { id: "s1", nome: "Material Construção", tipo: "saida" },
+        { id: "s2", nome: "Mão de Obra", tipo: "saida" },
+        { id: "s3", nome: "Equipamentos", tipo: "saida" }
+      ]
+    }
   }
 ];
 
 // Dados mockados das transações
-const mockTransacoesIniciais = [
+const mockTransacoesIniciais: Transacao[] = [
   {
     id: 1,
     data: "15/03/2024",
     tipo: "Entrada",
     descricao: "Pagamento parcial - 2ª parcela",
     valor: 15000,
-    obraId: 1
+    obraId: 1,
+    tabelaId: "e1"
   },
   {
     id: 2,
@@ -69,7 +84,8 @@ const mockTransacoesIniciais = [
     tipo: "Saída",
     descricao: "Cimento, areia e brita",
     valor: 3500,
-    obraId: 1
+    obraId: 1,
+    tabelaId: "s1"
   },
   {
     id: 3,
@@ -77,7 +93,8 @@ const mockTransacoesIniciais = [
     tipo: "Saída",
     descricao: "Salários quinzenal",
     valor: 8500,
-    obraId: 1
+    obraId: 1,
+    tabelaId: "s2"
   },
   {
     id: 4,
@@ -85,7 +102,8 @@ const mockTransacoesIniciais = [
     tipo: "Entrada",
     descricao: "Pagamento extra por mudanças",
     valor: 5000,
-    obraId: 1
+    obraId: 1,
+    tabelaId: "e2"
   },
   {
     id: 5,
@@ -93,15 +111,8 @@ const mockTransacoesIniciais = [
     tipo: "Saída",
     descricao: "Aluguel betoneira",
     valor: 800,
-    obraId: 1
-  },
-  {
-    id: 6,
-    data: "28/03/2024",
-    tipo: "Saída",
-    descricao: "ISS sobre serviços",
-    valor: 1200,
-    obraId: 1
+    obraId: 1,
+    tabelaId: "s3"
   }
 ];
 
@@ -112,6 +123,7 @@ const ObraDetalhes = () => {
   const [transacoes, setTransacoes] = useState(mockTransacoesIniciais);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [tipoTransacao, setTipoTransacao] = useState<"Entrada" | "Saída">("Entrada");
+  const [tabelaSelecionada, setTabelaSelecionada] = useState<string>("");
 
   const form = useForm<TransacaoFormData>({
     resolver: zodResolver(transacaoSchema),
@@ -119,25 +131,22 @@ const ObraDetalhes = () => {
       data: "",
       descricao: "",
       valor: "",
+      tabelaId: "",
     },
   });
 
   const obra = mockObras.find(o => o.id === Number(id));
   const transacoesObra = transacoes.filter(t => t.obraId === Number(id));
 
-  const filteredEntradas = transacoesObra
-    .filter(t => t.tipo === "Entrada")
-    .filter(transacao => {
-      const matchesSearch = transacao.descricao.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesSearch;
-    });
-
-  const filteredSaidas = transacoesObra
-    .filter(t => t.tipo === "Saída")
-    .filter(transacao => {
-      const matchesSearch = transacao.descricao.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesSearch;
-    });
+  // Função para filtrar transações por tabela específica
+  const getTransacoesPorTabela = (tabelaId: string) => {
+    return transacoesObra
+      .filter(t => t.tabelaId === tabelaId)
+      .filter(transacao => {
+        const matchesSearch = transacao.descricao.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesSearch;
+      });
+  };
 
   const totalEntradas = transacoesObra
     .filter(t => t.tipo === "Entrada")
@@ -150,13 +159,14 @@ const ObraDetalhes = () => {
   const saldo = totalEntradas - totalSaidas;
 
   const onSubmit = (data: TransacaoFormData) => {
-    const novaTransacao = {
+    const novaTransacao: Transacao = {
       id: Math.max(...transacoes.map(t => t.id)) + 1,
       data: data.data,
       tipo: tipoTransacao,
       descricao: data.descricao,
       valor: parseFloat(data.valor.replace(/[^\d,]/g, '').replace(',', '.')),
-      obraId: Number(id)
+      obraId: Number(id),
+      tabelaId: data.tabelaId
     };
     
     setTransacoes([...transacoes, novaTransacao]);
@@ -168,6 +178,9 @@ const ObraDetalhes = () => {
     setTipoTransacao(tipo);
     setIsDialogOpen(true);
     form.reset();
+    // Resetar tabela selecionada quando muda o tipo
+    setTabelaSelecionada("");
+    form.setValue("tabelaId", "");
   };
 
   if (!obra) {
@@ -181,63 +194,68 @@ const ObraDetalhes = () => {
     );
   }
 
-  const renderTransacaoTable = (transacoes: typeof mockTransacoesIniciais, tipo: "Entrada" | "Saída", color: string) => (
-    <Card className="min-w-[350px] flex-1 shadow-sm border-border">
-      <CardHeader className="pb-2 px-3 py-2 bg-muted/30 border-b">
-        <CardTitle className={`text-sm flex items-center gap-2 ${color} font-medium`}>
-          {tipo === "Entrada" ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-          {tipo}s ({transacoes.length})
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
-        <div className="overflow-auto max-h-[400px]">
-          <Table className="text-xs">
-            <TableHeader className="bg-muted/50 sticky top-0">
-              <TableRow className="border-border hover:bg-muted/50">
-                <TableHead className="h-8 px-2 text-xs font-medium border-r border-border">Data</TableHead>
-                <TableHead className="h-8 px-2 text-xs font-medium border-r border-border">Descrição</TableHead>
-                <TableHead className="h-8 px-2 text-xs font-medium text-right">Valor</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transacoes.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                    Nenhuma {tipo.toLowerCase()} encontrada
-                  </TableCell>
+  const renderTransacaoTable = (tabela: { id: string; nome: string; tipo: "entrada" | "saida" }) => {
+    const transacoesTabela = getTransacoesPorTabela(tabela.id);
+    const color = tabela.tipo === "entrada" ? "text-income" : "text-expense";
+    
+    return (
+      <Card key={tabela.id} className="min-w-[350px] flex-1 shadow-sm border-border">
+        <CardHeader className="pb-2 px-3 py-2 bg-muted/30 border-b">
+          <CardTitle className={`text-sm flex items-center gap-2 ${color} font-medium`}>
+            {tabela.tipo === "entrada" ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+            {tabela.nome} ({transacoesTabela.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-auto max-h-[400px]">
+            <Table className="text-xs">
+              <TableHeader className="bg-muted/50 sticky top-0">
+                <TableRow className="border-border hover:bg-muted/50">
+                  <TableHead className="h-8 px-2 text-xs font-medium border-r border-border">Data</TableHead>
+                  <TableHead className="h-8 px-2 text-xs font-medium border-r border-border">Descrição</TableHead>
+                  <TableHead className="h-8 px-2 text-xs font-medium text-right">Valor</TableHead>
                 </TableRow>
-              ) : (
-                transacoes.map((transacao, index) => (
-                  <TableRow 
-                    key={transacao.id} 
-                    className={`border-border hover:bg-muted/30 ${index % 2 === 0 ? 'bg-background' : 'bg-muted/10'}`}
-                  >
-                    <TableCell className="h-8 px-2 text-xs border-r border-border font-mono">{transacao.data}</TableCell>
-                    <TableCell className="h-8 px-2 text-xs border-r border-border max-w-[200px] truncate" title={transacao.descricao}>
-                      {transacao.descricao}
-                    </TableCell>
-                    <TableCell className={`h-8 px-2 text-xs text-right font-mono font-medium ${color}`}>
-                      {formatCurrency(transacao.valor)}
+              </TableHeader>
+              <TableBody>
+                {transacoesTabela.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                      Nenhuma transação encontrada
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        {transacoes.length > 0 && (
-          <div className={`border-t-2 border-border p-2 ${tipo === "Entrada" ? "bg-income/5" : "bg-expense/5"} sticky bottom-0`}>
-            <div className="flex justify-between items-center">
-              <span className="text-xs font-medium">Total:</span>
-              <span className={`text-sm font-bold font-mono ${color}`}>
-                {formatCurrency(transacoes.reduce((sum, t) => sum + t.valor, 0))}
-              </span>
-            </div>
+                ) : (
+                  transacoesTabela.map((transacao, index) => (
+                    <TableRow 
+                      key={transacao.id} 
+                      className={`border-border hover:bg-muted/30 ${index % 2 === 0 ? 'bg-background' : 'bg-muted/10'}`}
+                    >
+                      <TableCell className="h-8 px-2 text-xs border-r border-border font-mono">{transacao.data}</TableCell>
+                      <TableCell className="h-8 px-2 text-xs border-r border-border max-w-[200px] truncate" title={transacao.descricao}>
+                        {transacao.descricao}
+                      </TableCell>
+                      <TableCell className={`h-8 px-2 text-xs text-right font-mono font-medium ${color}`}>
+                        {formatCurrency(transacao.valor)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
-        )}
-      </CardContent>
-    </Card>
-  );
+          {transacoesTabela.length > 0 && (
+            <div className={`border-t-2 border-border p-2 ${tabela.tipo === "entrada" ? "bg-income/5" : "bg-expense/5"} sticky bottom-0`}>
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-medium">Total:</span>
+                <span className={`text-sm font-bold font-mono ${color}`}>
+                  {formatCurrency(transacoesTabela.reduce((sum, t) => sum + t.valor, 0))}
+                </span>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -366,11 +384,15 @@ const ObraDetalhes = () => {
         <div className="w-full">
           <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
             <div className="flex gap-4 min-w-max pb-2">
-              {/* Tabela de Entradas */}
-              {renderTransacaoTable(filteredEntradas, "Entrada", "text-income")}
+              {/* Tabelas de Entradas */}
+              {obra?.configuracaoTabelas.entradas.map(tabela => 
+                renderTransacaoTable(tabela)
+              )}
               
-              {/* Tabela de Saídas */}
-              {renderTransacaoTable(filteredSaidas, "Saída", "text-expense")}
+              {/* Tabelas de Saídas */}
+              {obra?.configuracaoTabelas.saidas.map(tabela => 
+                renderTransacaoTable(tabela)
+              )}
             </div>
           </div>
         </div>
@@ -378,15 +400,15 @@ const ObraDetalhes = () => {
         {/* Resumo das Tabelas */}
         <div className="grid grid-cols-2 gap-2 md:gap-4 pt-2 border-t">
           <div className="text-center p-2 md:p-3 bg-income/5 rounded-lg">
-            <p className="text-xs text-muted-foreground mb-1">Entradas Filtradas</p>
+            <p className="text-xs text-muted-foreground mb-1">Tabelas Entrada</p>
             <p className="text-sm font-bold text-income">
-              {filteredEntradas.length} itens
+              {obra?.configuracaoTabelas.entradas.length} tabelas
             </p>
           </div>
           <div className="text-center p-2 md:p-3 bg-expense/5 rounded-lg">
-            <p className="text-xs text-muted-foreground mb-1">Saídas Filtradas</p>
+            <p className="text-xs text-muted-foreground mb-1">Tabelas Saída</p>
             <p className="text-sm font-bold text-expense">
-              {filteredSaidas.length} itens
+              {obra?.configuracaoTabelas.saidas.length} tabelas
             </p>
           </div>
         </div>
@@ -401,6 +423,34 @@ const ObraDetalhes = () => {
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="tabelaId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tabela de {tipoTransacao}</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a tabela" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {obra && (tipoTransacao === "Entrada" 
+                          ? obra.configuracaoTabelas.entradas 
+                          : obra.configuracaoTabelas.saidas
+                        ).map(tabela => (
+                          <SelectItem key={tabela.id} value={tabela.id}>
+                            {tabela.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="data"
