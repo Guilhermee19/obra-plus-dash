@@ -1,0 +1,161 @@
+{
+  "obras": [
+    {
+      "id": 1,
+      "nome": "Residencial Vila Nova",
+      "cliente": "João Silva",
+      "status": "Em Andamento",
+      "progresso": 65,
+      "localizacao": "Zona Sul, SP",
+      "dataInicio": "2024-01-15",
+      "dataPrevista": "2024-06-30",
+      "responsavel": "Carlos Silva",
+      "configuracaoTabelas": {
+        "entradas": [
+          { "id": "e1", "nome": "Pagamentos Cliente", "tipo": "entrada" },
+          { "id": "e2", "nome": "Recursos Extras", "tipo": "entrada" }
+        ],
+        "saidas": [
+          { "id": "s1", "nome": "Material Construção", "tipo": "saida" },
+          { "id": "s2", "nome": "Mão de Obra", "tipo": "saida" },
+          { "id": "s3", "nome": "Equipamentos", "tipo": "saida" }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "nome": "Comercial Center Point",
+      "cliente": "Maria Santos",
+      "status": "Planejamento",
+      "progresso": 15,
+      "localizacao": "Centro, SP",
+      "dataInicio": "2024-02-22",
+      "dataPrevista": "2024-12-15",
+      "responsavel": "Ana Costa",
+      "configuracaoTabelas": {
+        "entradas": [
+          { "id": "e1", "nome": "Pagamento Inicial", "tipo": "entrada" },
+          { "id": "e2", "nome": "Financiamento", "tipo": "entrada" }
+        ],
+        "saidas": [
+          { "id": "s1", "nome": "Materiais", "tipo": "saida" },
+          { "id": "s2", "nome": "Funcionários", "tipo": "saida" }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "nome": "Casa Moderna Premium",
+      "cliente": "Pedro Costa",
+      "status": "Finalizada",
+      "progresso": 100,
+      "localizacao": "Zona Norte, SP",
+      "dataInicio": "2023-11-08",
+      "dataPrevista": "2024-03-20",
+      "responsavel": "João Oliveira",
+      "configuracaoTabelas": {
+        "entradas": [
+          { "id": "e1", "nome": "Pagamentos", "tipo": "entrada" }
+        ],
+        "saidas": [
+          { "id": "s1", "nome": "Construção", "tipo": "saida" },
+          { "id": "s2", "nome": "Acabamento", "tipo": "saida" }
+        ]
+      }
+    }
+  ],
+  "transacoes": [
+    {
+      "id": 1,
+      "data": "2024-03-15",
+      "tipo": "Entrada",
+      "descricao": "Pagamento parcial - 2ª parcela",
+      "valor": 15000,
+      "obraId": 1,
+      "tabelaId": "e1"
+    },
+    {
+      "id": 2,
+      "data": "2024-03-18",
+      "tipo": "Saída",
+      "descricao": "Cimento, areia e brita",
+      "valor": 3500,
+      "obraId": 1,
+      "tabelaId": "s1"
+    },
+    {
+      "id": 3,
+      "data": "2024-03-20",
+      "tipo": "Saída",
+      "descricao": "Salários quinzenal",
+      "valor": 8500,
+      "obraId": 1,
+      "tabelaId": "s2"
+    },
+    {
+      "id": 4,
+      "data": "2024-03-22",
+      "tipo": "Entrada",
+      "descricao": "Pagamento extra por mudanças",
+      "valor": 5000,
+      "obraId": 1,
+      "tabelaId": "e2"
+    },
+    {
+      "id": 5,
+      "data": "2024-03-25",
+      "tipo": "Saída",
+      "descricao": "Aluguel betoneira",
+      "valor": 800,
+      "obraId": 1,
+      "tabelaId": "s3"
+    },
+    {
+      "id": 6,
+      "data": "2024-02-25",
+      "tipo": "Entrada",
+      "descricao": "Entrada inicial do projeto",
+      "valor": 50000,
+      "obraId": 2,
+      "tabelaId": "e1"
+    },
+    {
+      "id": 7,
+      "data": "2024-03-01",
+      "tipo": "Saída",
+      "descricao": "Compra de materiais iniciais",
+      "valor": 12000,
+      "obraId": 2,
+      "tabelaId": "s1"
+    },
+    {
+      "id": 8,
+      "data": "2024-01-15",
+      "tipo": "Entrada",
+      "descricao": "Pagamento final da obra",
+      "valor": 78000,
+      "obraId": 3,
+      "tabelaId": "e1"
+    },
+    {
+      "id": 9,
+      "data": "2024-02-10",
+      "tipo": "Saída",
+      "descricao": "Custos totais de construção",
+      "valor": 45000,
+      "obraId": 3,
+      "tabelaId": "s1"
+    },
+    {
+      "id": 10,
+      "data": "2024-03-05",
+      "tipo": "Saída",
+      "descricao": "Acabamentos finais",
+      "valor": 20000,
+      "obraId": 3,
+      "tabelaId": "s2"
+    }
+  ],
+  "proximoIdObra": 4,
+  "proximoIdTransacao": 11
+}

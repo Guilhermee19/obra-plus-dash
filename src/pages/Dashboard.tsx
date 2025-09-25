@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,73 +15,75 @@ import {
   Calendar,
   DollarSign
 } from "lucide-react";
-
-// Dados mockados para demonstração
-const mockObras = [
-  {
-    id: 1,
-    nome: "Residencial Vila Nova",
-    cliente: "João Silva",
-    status: "Em Andamento",
-    progresso: 65,
-    entrada: 45000,
-    saida: 28000,
-    saldo: 17000,
-    localizacao: "Zona Sul",
-    dataInicio: "15/01/2024"
-  },
-  {
-    id: 2,
-    nome: "Comercial Center Point",
-    cliente: "Maria Santos",
-    status: "Planejamento",
-    progresso: 15,
-    entrada: 125000,
-    saida: 18000,
-    saldo: 107000,
-    localizacao: "Centro",
-    dataInicio: "22/02/2024"
-  },
-  {
-    id: 3,
-    nome: "Casa Moderna Premium",
-    cliente: "Pedro Costa",
-    status: "Finalizada",
-    progresso: 100,
-    entrada: 78000,
-    saida: 65000,
-    saldo: 13000,
-    localizacao: "Zona Norte",
-    dataInicio: "08/11/2023"
-  }
-];
+import { Obra, ConfiguracaoTabelas } from "@/types/obra";
+import { criarNovaObra, calcularResumoGeral } from "@/services/obraService";
+import { toast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isNovaObraOpen, setIsNovaObraOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("todas");
-
-  // Filtrar obras baseado na aba ativa
-  const filteredObras = mockObras.filter(obra => {
-    switch (activeTab) {
-      case "andamento":
-        return obra.status === "Em Andamento" || obra.status === "Planejamento";
-      case "finalizadas":
-        return obra.status === "Finalizada";
-      default:
-        return true;
-    }
+  const [resumoData, setResumoData] = useState({
+    totalObras: 0,
+    obrasAtivas: 0,
+    totalEntradas: 0,
+    totalSaidas: 0,
+    saldo: 0,
+    obras: [] as Obra[]
   });
+  const [loading, setLoading] = useState(true);
 
-  const totalObras = filteredObras.length;
-  const obrasAtivas = filteredObras.filter(obra => obra.status !== "Finalizada").length;
-  const totalEntradas = filteredObras.reduce((acc, obra) => acc + obra.entrada, 0);
-  const totalSaidas = filteredObras.reduce((acc, obra) => acc + obra.saida, 0);
-  const saldoTotal = totalEntradas - totalSaidas;
+  // Carregar dados ao montar o componente e quando a aba muda
+  useEffect(() => {
+    const carregarResumo = async () => {
+      setLoading(true);
+      try {
+        const dados = await calcularResumoGeral(activeTab);
+        setResumoData(dados);
+      } catch (error) {
+        console.error("Erro ao carregar resumo:", error);
+        toast({
+          title: "Erro",
+          description: "Erro ao carregar dados das obras",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleNovaObra = (data: any) => {
-    console.log("Nova obra criada:", data);
-    // Aqui você implementaria a lógica para salvar a obra
+    carregarResumo();
+  }, [activeTab]);
+
+  const handleNovaObra = async (data: {
+    nome: string;
+    cliente: string;
+    localizacao: string;
+    responsavel: string;
+    dataInicio: string;
+    dataPrevista: string;
+    configuracaoTabelas: ConfiguracaoTabelas;
+  }) => {
+    try {
+      await criarNovaObra(data);
+      toast({
+        title: "Sucesso",
+        description: "Nova obra criada com sucesso!"
+      });
+      
+      // Recarregar dados
+      const dados = await calcularResumoGeral(activeTab);
+      setResumoData(dados);
+      
+      setIsNovaObraOpen(false);
+    } catch (error) {
+      console.error("Erro ao criar obra:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao criar nova obra",
+        variant: "destructive"
+      });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -120,9 +122,9 @@ const Dashboard = () => {
             <HardHat className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{totalObras}</div>
+            <div className="text-2xl font-bold text-foreground">{resumoData.totalObras}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {obrasAtivas} em andamento
+              {resumoData.obrasAtivas} em andamento
             </p>
           </CardContent>
         </Card>
@@ -136,7 +138,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-income">
-              R$ {totalEntradas.toLocaleString('pt-BR')}
+              R$ {resumoData.totalEntradas.toLocaleString('pt-BR')}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               +12% vs mês anterior
@@ -153,7 +155,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-expense">
-              R$ {totalSaidas.toLocaleString('pt-BR')}
+              R$ {resumoData.totalSaidas.toLocaleString('pt-BR')}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               -5% vs mês anterior
@@ -169,11 +171,11 @@ const Dashboard = () => {
             <DollarSign className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${saldoTotal >= 0 ? 'text-income' : 'text-expense'}`}>
-              R$ {Math.abs(saldoTotal).toLocaleString('pt-BR')}
+            <div className={`text-2xl font-bold ${resumoData.saldo >= 0 ? 'text-income' : 'text-expense'}`}>
+              R$ {Math.abs(resumoData.saldo).toLocaleString('pt-BR')}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {saldoTotal >= 0 ? 'Lucro' : 'Prejuízo'} acumulado
+              {resumoData.saldo >= 0 ? 'Lucro' : 'Prejuízo'} acumulado
             </p>
           </CardContent>
         </Card>
@@ -190,14 +192,26 @@ const Dashboard = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="todas">Todas ({mockObras.length})</TabsTrigger>
-            <TabsTrigger value="andamento">Em Andamento ({mockObras.filter(o => o.status === "Em Andamento" || o.status === "Planejamento").length})</TabsTrigger>
-            <TabsTrigger value="finalizadas">Finalizadas ({mockObras.filter(o => o.status === "Finalizada").length})</TabsTrigger>
+            <TabsTrigger value="todas" disabled={loading}>
+              Todas ({resumoData.totalObras})
+            </TabsTrigger>
+            <TabsTrigger value="andamento" disabled={loading}>
+              Em Andamento ({resumoData.obrasAtivas})
+            </TabsTrigger>
+            <TabsTrigger value="finalizadas" disabled={loading}>
+              Finalizadas ({resumoData.totalObras - resumoData.obrasAtivas})
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-6">
             <div className="grid gap-4">
-              {filteredObras.length === 0 ? (
+              {loading ? (
+                <Card className="text-center py-12">
+                  <CardContent>
+                    <p className="text-muted-foreground">Carregando dados...</p>
+                  </CardContent>
+                </Card>
+              ) : resumoData.obras.length === 0 ? (
                 <Card className="text-center py-12">
                   <CardContent>
                     <p className="text-muted-foreground text-lg mb-2">Nenhuma obra encontrada</p>
@@ -209,7 +223,13 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
               ) : (
-                filteredObras.map((obra) => (
+                resumoData.obras.map((obra) => {
+                  // Calcular valores financeiros da obra baseado nas transações
+                  const entrada = 0; // Será calculado pelo serviço posteriormente
+                  const saida = 0; // Será calculado pelo serviço posteriormente
+                  const saldo = entrada - saida;
+                  
+                  return (
                   <Card 
                     key={obra.id} 
                     className="shadow-card hover:shadow-lg transition-all duration-300 cursor-pointer"
@@ -235,7 +255,7 @@ const Dashboard = () => {
                             </div>
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-muted-foreground">Início: {obra.dataInicio}</span>
+                              <span className="text-muted-foreground">Início: {new Date(obra.dataInicio).toLocaleDateString('pt-BR')}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-muted-foreground">Progresso: {obra.progresso}%</span>
@@ -256,19 +276,19 @@ const Dashboard = () => {
                             <div className="p-3 bg-income/10 rounded-lg">
                               <p className="text-xs text-muted-foreground">Entradas</p>
                               <p className="font-semibold text-income text-sm">
-                                R$ {(obra.entrada / 1000).toFixed(0)}k
+                                R$ {(entrada / 1000).toFixed(0)}k
                               </p>
                             </div>
                             <div className="p-3 bg-expense/10 rounded-lg">
                               <p className="text-xs text-muted-foreground">Saídas</p>
                               <p className="font-semibold text-expense text-sm">
-                                R$ {(obra.saida / 1000).toFixed(0)}k
+                                R$ {(saida / 1000).toFixed(0)}k
                               </p>
                             </div>
                             <div className="p-3 bg-primary/10 rounded-lg">
                               <p className="text-xs text-muted-foreground">Saldo</p>
-                              <p className={`font-semibold text-sm ${obra.saldo >= 0 ? 'text-income' : 'text-expense'}`}>
-                                R$ {(Math.abs(obra.saldo) / 1000).toFixed(0)}k
+                              <p className={`font-semibold text-sm ${saldo >= 0 ? 'text-income' : 'text-expense'}`}>
+                                R$ {(Math.abs(saldo) / 1000).toFixed(0)}k
                               </p>
                             </div>
                           </div>
@@ -276,7 +296,8 @@ const Dashboard = () => {
                       </div>
                     </CardContent>
                   </Card>
-                ))
+                  );
+                })
               )}
             </div>
           </TabsContent>

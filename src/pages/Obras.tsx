@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { NovaObraDialog } from "@/components/NovaObraDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,79 +17,72 @@ import {
   TrendingUp,
   TrendingDown
 } from "lucide-react";
-
-// Dados mockados expandidos
-const mockObras = [
-  {
-    id: 1,
-    nome: "Residencial Vila Nova",
-    cliente: "João Silva",
-    status: "Em Andamento",
-    progresso: 65,
-    entrada: 45000,
-    saida: 28000,
-    saldo: 17000,
-    localizacao: "Zona Sul, SP",
-    dataInicio: "15/01/2024",
-    dataPrevista: "30/06/2024",
-    responsavel: "Carlos Silva"
-  },
-  {
-    id: 2,
-    nome: "Comercial Center Point",
-    cliente: "Maria Santos",
-    status: "Planejamento",
-    progresso: 15,
-    entrada: 125000,
-    saida: 18000,
-    saldo: 107000,
-    localizacao: "Centro, SP",
-    dataInicio: "22/02/2024",
-    dataPrevista: "15/12/2024",
-    responsavel: "Ana Costa"
-  },
-  {
-    id: 3,
-    nome: "Casa Moderna Premium",
-    cliente: "Pedro Costa",
-    status: "Finalizada",
-    progresso: 100,
-    entrada: 78000,
-    saida: 65000,
-    saldo: 13000,
-    localizacao: "Zona Norte, SP",
-    dataInicio: "08/11/2023",
-    dataPrevista: "20/03/2024",
-    responsavel: "João Oliveira"
-  },
-  {
-    id: 4,
-    nome: "Reforma Industrial Matriz",
-    cliente: "Indústrias ABC",
-    status: "Em Andamento",
-    progresso: 40,
-    entrada: 95000,
-    saida: 52000,
-    saldo: 43000,
-    localizacao: "Zona Industrial, SP",
-    dataInicio: "10/03/2024",
-    dataPrevista: "20/08/2024",
-    responsavel: "Roberto Alves"
-  }
-];
+import { Obra, ConfiguracaoTabelas } from "@/types/obra";
+import { obterObras, criarNovaObra, calcularResumoFinanceiro } from "@/services/obraService";
+import { toast } from "@/hooks/use-toast";
 
 const Obras = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [isNovaObraOpen, setIsNovaObraOpen] = useState(false);
+  const [obras, setObras] = useState<Obra[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleNovaObra = (data: any) => {
-    console.log("Nova obra criada:", data);
-    // Aqui você implementaria a lógica para salvar a obra
+  // Carregar obras ao montar o componente
+  useEffect(() => {
+    const carregarObras = async () => {
+      setLoading(true);
+      try {
+        const obrasData = await obterObras();
+        setObras(obrasData);
+      } catch (error) {
+        console.error("Erro ao carregar obras:", error);
+        toast({
+          title: "Erro",
+          description: "Erro ao carregar obras",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    carregarObras();
+  }, []);
+
+  const handleNovaObra = async (data: {
+    nome: string;
+    cliente: string;
+    localizacao: string;
+    responsavel: string;
+    dataInicio: string;
+    dataPrevista: string;
+    configuracaoTabelas: ConfiguracaoTabelas;
+  }) => {
+    try {
+      await criarNovaObra(data);
+      toast({
+        title: "Sucesso",
+        description: "Nova obra criada com sucesso!"
+      });
+      
+      // Recarregar obras
+      const obrasData = await obterObras();
+      setObras(obrasData);
+      
+      setIsNovaObraOpen(false);
+    } catch (error) {
+      console.error("Erro ao criar obra:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao criar nova obra",
+        variant: "destructive"
+      });
+    }
   };
 
-  const filteredObras = mockObras.filter(obra => {
+  const filteredObras = obras.filter(obra => {
     const matchesSearch = obra.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          obra.cliente.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "Todos" || obra.status === statusFilter;
@@ -154,7 +147,13 @@ const Obras = () => {
 
       {/* Lista de Obras */}
       <div className="grid gap-6">
-        {filteredObras.length === 0 ? (
+        {loading ? (
+          <Card className="text-center py-12">
+            <CardContent>
+              <p className="text-muted-foreground">Carregando obras...</p>
+            </CardContent>
+          </Card>
+        ) : filteredObras.length === 0 ? (
           <Card className="text-center py-12">
             <CardContent>
               <p className="text-muted-foreground text-lg mb-2">Nenhuma obra encontrada</p>
@@ -162,7 +161,13 @@ const Obras = () => {
             </CardContent>
           </Card>
         ) : (
-          filteredObras.map((obra) => (
+          filteredObras.map((obra) => {
+            // Para agora, usar valores padrão - posteriormente será calculado do serviço
+            const entrada = 0;
+            const saida = 0;
+            const saldo = entrada - saida;
+            
+            return (
             <Card key={obra.id} className="shadow-card hover:shadow-lg transition-all duration-300">
               <CardContent className="p-6">
                 <div className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-6">
@@ -186,11 +191,11 @@ const Obras = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-muted-foreground">Início: {obra.dataInicio}</span>
+                        <span className="text-muted-foreground">Início: {new Date(obra.dataInicio).toLocaleDateString('pt-BR')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-muted-foreground">Previsão: {obra.dataPrevista}</span>
+                        <span className="text-muted-foreground">Previsão: {new Date(obra.dataPrevista).toLocaleDateString('pt-BR')}</span>
                       </div>
                     </div>
 
@@ -219,21 +224,21 @@ const Obras = () => {
                         <TrendingUp className="h-5 w-5 text-income mx-auto mb-2" />
                         <p className="text-xs text-muted-foreground mb-1">Entradas</p>
                         <p className="font-bold text-income">
-                          R$ {(obra.entrada / 1000).toFixed(0)}k
+                          R$ {(entrada / 1000).toFixed(0)}k
                         </p>
                       </div>
                       <div className="p-4 bg-expense/10 rounded-lg text-center">
                         <TrendingDown className="h-5 w-5 text-expense mx-auto mb-2" />
                         <p className="text-xs text-muted-foreground mb-1">Saídas</p>
                         <p className="font-bold text-expense">
-                          R$ {(obra.saida / 1000).toFixed(0)}k
+                          R$ {(saida / 1000).toFixed(0)}k
                         </p>
                       </div>
                       <div className="p-4 bg-primary/10 rounded-lg text-center">
                         <DollarSign className="h-5 w-5 text-primary mx-auto mb-2" />
                         <p className="text-xs text-muted-foreground mb-1">Saldo</p>
-                        <p className={`font-bold ${obra.saldo >= 0 ? 'text-income' : 'text-expense'}`}>
-                          R$ {(Math.abs(obra.saldo) / 1000).toFixed(0)}k
+                        <p className={`font-bold ${saldo >= 0 ? 'text-income' : 'text-expense'}`}>
+                          R$ {(Math.abs(saldo) / 1000).toFixed(0)}k
                         </p>
                       </div>
                     </div>
@@ -258,7 +263,8 @@ const Obras = () => {
                 </div>
               </CardContent>
             </Card>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -266,7 +272,7 @@ const Obras = () => {
       {filteredObras.length > 0 && (
         <div className="flex justify-center">
           <p className="text-muted-foreground text-sm">
-          Mostrando {filteredObras.length} de {mockObras.length} obras
+          Mostrando {filteredObras.length} de {obras.length} obras
           </p>
         </div>
       )}

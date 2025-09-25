@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Obra, Transacao, ConfiguracaoTabelas } from "@/types/obra";
+import { 
+  obterObraPorId, 
+  obterTransacoesPorObra, 
+  adicionarTransacao,
+  calcularResumoFinanceiro
+} from "@/services/obraService";
+import { toast } from "@/hooks/use-toast";
 
 // Schema para validação do formulário
 const transacaoSchema = z.object({
@@ -41,89 +48,21 @@ const transacaoSchema = z.object({
 
 type TransacaoFormData = z.infer<typeof transacaoSchema>;
 
-// Dados mockados das obras com configuração de tabelas
-const mockObras: Obra[] = [
-  {
-    id: 1,
-    nome: "Residencial Vila Nova",
-    cliente: "João Silva",
-    status: "Em Andamento",
-    progresso: 65,
-    localizacao: "Zona Sul, SP",
-    dataInicio: "15/01/2024",
-    dataPrevista: "30/06/2024",
-    responsavel: "Carlos Silva",
-    configuracaoTabelas: {
-      entradas: [
-        { id: "e1", nome: "Pagamentos Cliente", tipo: "entrada" },
-        { id: "e2", nome: "Recursos Extras", tipo: "entrada" }
-      ],
-      saidas: [
-        { id: "s1", nome: "Material Construção", tipo: "saida" },
-        { id: "s2", nome: "Mão de Obra", tipo: "saida" },
-        { id: "s3", nome: "Equipamentos", tipo: "saida" }
-      ]
-    }
-  }
-];
-
-// Dados mockados das transações
-const mockTransacoesIniciais: Transacao[] = [
-  {
-    id: 1,
-    data: "15/03/2024",
-    tipo: "Entrada",
-    descricao: "Pagamento parcial - 2ª parcela",
-    valor: 15000,
-    obraId: 1,
-    tabelaId: "e1"
-  },
-  {
-    id: 2,
-    data: "18/03/2024",
-    tipo: "Saída",
-    descricao: "Cimento, areia e brita",
-    valor: 3500,
-    obraId: 1,
-    tabelaId: "s1"
-  },
-  {
-    id: 3,
-    data: "20/03/2024",
-    tipo: "Saída",
-    descricao: "Salários quinzenal",
-    valor: 8500,
-    obraId: 1,
-    tabelaId: "s2"
-  },
-  {
-    id: 4,
-    data: "22/03/2024",
-    tipo: "Entrada",
-    descricao: "Pagamento extra por mudanças",
-    valor: 5000,
-    obraId: 1,
-    tabelaId: "e2"
-  },
-  {
-    id: 5,
-    data: "25/03/2024",
-    tipo: "Saída",
-    descricao: "Aluguel betoneira",
-    valor: 800,
-    obraId: 1,
-    tabelaId: "s3"
-  }
-];
-
 const ObraDetalhes = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [transacoes, setTransacoes] = useState(mockTransacoesIniciais);
+  const [obra, setObra] = useState<Obra | null>(null);
+  const [transacoes, setTransacoes] = useState<Transacao[]>([]);
+  const [resumoFinanceiro, setResumoFinanceiro] = useState({
+    totalEntradas: 0,
+    totalSaidas: 0,
+    saldo: 0
+  });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [tipoTransacao, setTipoTransacao] = useState<"Entrada" | "Saída">("Entrada");
   const [tabelaSelecionada, setTabelaSelecionada] = useState<string>("");
+  const [loading, setLoading] = useState(true);
 
   const form = useForm<TransacaoFormData>({
     resolver: zodResolver(transacaoSchema),
@@ -135,8 +74,50 @@ const ObraDetalhes = () => {
     },
   });
 
-  const obra = mockObras.find(o => o.id === Number(id));
-  const transacoesObra = transacoes.filter(t => t.obraId === Number(id));
+  // Carregar dados da obra ao montar o componente
+  useEffect(() => {
+    const carregarDadosObra = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      try {
+        const obraData = await obterObraPorId(Number(id));
+        if (!obraData) {
+          toast({
+            title: "Erro",
+            description: "Obra não encontrada",
+            variant: "destructive"
+          });
+          navigate("/obras");
+          return;
+        }
+        
+        setObra(obraData);
+        
+        // Carregar transações
+        const transacoesData = await obterTransacoesPorObra(Number(id));
+        setTransacoes(transacoesData);
+        
+        // Calcular resumo financeiro
+        const resumo = await calcularResumoFinanceiro(Number(id));
+        setResumoFinanceiro(resumo);
+        
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        toast({
+          title: "Erro",
+          description: "Erro ao carregar dados da obra",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    carregarDadosObra();
+  }, [id, navigate]);
+
+  const transacoesObra = transacoes;
 
   // Função para filtrar transações por tabela específica
   const getTransacoesPorTabela = (tabelaId: string) => {
@@ -148,30 +129,43 @@ const ObraDetalhes = () => {
       });
   };
 
-  const totalEntradas = transacoesObra
-    .filter(t => t.tipo === "Entrada")
-    .reduce((sum, t) => sum + t.valor, 0);
-
-  const totalSaidas = transacoesObra
-    .filter(t => t.tipo === "Saída")
-    .reduce((sum, t) => sum + t.valor, 0);
-
-  const saldo = totalEntradas - totalSaidas;
-
-  const onSubmit = (data: TransacaoFormData) => {
-    const novaTransacao: Transacao = {
-      id: Math.max(...transacoes.map(t => t.id)) + 1,
-      data: data.data,
-      tipo: tipoTransacao,
-      descricao: data.descricao,
-      valor: parseFloat(data.valor.replace(/[^\d,]/g, '').replace(',', '.')),
-      obraId: Number(id),
-      tabelaId: data.tabelaId
-    };
+  const onSubmit = async (data: TransacaoFormData) => {
+    if (!id) return;
     
-    setTransacoes([...transacoes, novaTransacao]);
-    form.reset();
-    setIsDialogOpen(false);
+    try {
+      const dadosTransacao = {
+        data: data.data,
+        tipo: tipoTransacao,
+        descricao: data.descricao,
+        valor: parseFloat(data.valor.replace(/[^\d,]/g, '').replace(',', '.')),
+        obraId: Number(id),
+        tabelaId: data.tabelaId
+      };
+      
+      await adicionarTransacao(dadosTransacao);
+      
+      toast({
+        title: "Sucesso",
+        description: "Transação adicionada com sucesso!"
+      });
+      
+      // Recarregar dados
+      const transacoesData = await obterTransacoesPorObra(Number(id));
+      setTransacoes(transacoesData);
+      
+      const resumo = await calcularResumoFinanceiro(Number(id));
+      setResumoFinanceiro(resumo);
+      
+      form.reset();
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Erro ao adicionar transação:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao adicionar transação",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleNovaTransacao = (tipo: "Entrada" | "Saída") => {
@@ -182,6 +176,14 @@ const ObraDetalhes = () => {
     setTabelaSelecionada("");
     form.setValue("tabelaId", "");
   };
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Carregando dados da obra...</p>
+      </div>
+    );
+  }
 
   if (!obra) {
     return (
@@ -310,12 +312,12 @@ const ObraDetalhes = () => {
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">Início:</span>
-              <span className="font-medium">{obra.dataInicio}</span>
+              <span className="font-medium">{new Date(obra.dataInicio).toLocaleDateString('pt-BR')}</span>
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">Previsão:</span>
-              <span className="font-medium">{obra.dataPrevista}</span>
+              <span className="font-medium">{new Date(obra.dataPrevista).toLocaleDateString('pt-BR')}</span>
             </div>
           </div>
         </CardContent>
@@ -327,7 +329,7 @@ const ObraDetalhes = () => {
           <CardContent className="p-3 md:p-4">
             <div className="text-center">
               <p className="text-xs md:text-sm text-muted-foreground mb-1">Entradas</p>
-              <p className="text-sm md:text-xl font-bold text-income">{formatCurrency(totalEntradas)}</p>
+              <p className="text-sm md:text-xl font-bold text-income">{formatCurrency(resumoFinanceiro.totalEntradas)}</p>
             </div>
           </CardContent>
         </Card>
@@ -335,7 +337,7 @@ const ObraDetalhes = () => {
           <CardContent className="p-3 md:p-4">
             <div className="text-center">
               <p className="text-xs md:text-sm text-muted-foreground mb-1">Saídas</p>
-              <p className="text-sm md:text-xl font-bold text-expense">{formatCurrency(totalSaidas)}</p>
+              <p className="text-sm md:text-xl font-bold text-expense">{formatCurrency(resumoFinanceiro.totalSaidas)}</p>
             </div>
           </CardContent>
         </Card>
@@ -343,8 +345,8 @@ const ObraDetalhes = () => {
           <CardContent className="p-3 md:p-4">
             <div className="text-center">
               <p className="text-xs md:text-sm text-muted-foreground mb-1">Saldo</p>
-              <p className={`text-sm md:text-xl font-bold ${saldo >= 0 ? 'text-income' : 'text-expense'}`}>
-                {formatCurrency(saldo)}
+              <p className={`text-sm md:text-xl font-bold ${resumoFinanceiro.saldo >= 0 ? 'text-income' : 'text-expense'}`}>
+                {formatCurrency(resumoFinanceiro.saldo)}
               </p>
             </div>
           </CardContent>
