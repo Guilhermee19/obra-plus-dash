@@ -204,3 +204,50 @@ export const calcularResumoGeral = async (filtroStatus?: string) => {
     obras: obrasFiltradas
   };
 };
+
+// Função para atualizar dados de uma obra
+export const atualizarObra = async (
+  obraId: number,
+  dadosAtualizados: {
+    nome?: string;
+    cliente?: string;
+    localizacao?: string;
+    responsavel?: string;
+    dataInicio?: string;
+    dataPrevista?: string;
+    status?: string;
+    progresso?: number;
+    configuracaoTabelas?: ConfiguracaoTabelas;
+  }
+): Promise<Obra> => {
+  const dados = await carregarDadosCompletos();
+  
+  const obraIndex = dados.obras.findIndex(obra => obra.id === obraId);
+  if (obraIndex === -1) {
+    throw new Error("Obra não encontrada");
+  }
+
+  // Atualizar obra
+  dados.obras[obraIndex] = {
+    ...dados.obras[obraIndex],
+    ...dadosAtualizados
+  };
+
+  // Salvar
+  salvarDados(dados);
+  
+  return dados.obras[obraIndex];
+};
+
+// Função para remover transações de tabelas que foram removidas
+export const limparTransacoesTabelas = async (obraId: number, tabelasRestantes: string[]) => {
+  const dados = await carregarDadosCompletos();
+  
+  // Filtrar transações, mantendo apenas as de tabelas que ainda existem
+  dados.transacoes = dados.transacoes.filter(transacao => 
+    transacao.obraId !== obraId || tabelasRestantes.includes(transacao.tabelaId)
+  );
+  
+  // Salvar
+  salvarDados(dados);
+};

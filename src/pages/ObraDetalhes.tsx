@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { EditarObraDialog } from "@/components/EditarObraDialog";
 import { 
   Table, 
   TableBody, 
@@ -24,7 +25,8 @@ import {
   DollarSign,
   Calendar,
   MapPin,
-  User
+  User,
+  Edit
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -60,6 +62,7 @@ const ObraDetalhes = () => {
     saldo: 0
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditarObraOpen, setIsEditarObraOpen] = useState(false);
   const [tipoTransacao, setTipoTransacao] = useState<"Entrada" | "Saída">("Entrada");
   const [tabelaSelecionada, setTabelaSelecionada] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -177,6 +180,28 @@ const ObraDetalhes = () => {
     form.setValue("tabelaId", "");
   };
 
+  const handleSuccessEdit = async () => {
+    if (!id) return;
+    
+    try {
+      // Recarregar dados da obra
+      const obraData = await obterObraPorId(Number(id));
+      if (obraData) {
+        setObra(obraData);
+        
+        // Recarregar transações
+        const transacoesData = await obterTransacoesPorObra(Number(id));
+        setTransacoes(transacoesData);
+        
+        // Calcular resumo financeiro
+        const resumo = await calcularResumoFinanceiro(Number(id));
+        setResumoFinanceiro(resumo);
+      }
+    } catch (error) {
+      console.error("Erro ao recarregar dados:", error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -286,10 +311,16 @@ const ObraDetalhes = () => {
             <p className="text-muted-foreground">Controle Financeiro</p>
           </div>
         </div>
-        <Button className="bg-gradient-to-r from-primary to-construction text-white" onClick={() => handleNovaTransacao("Entrada")}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Transação
-        </Button>
+        <div className="flex gap-2">
+          <Button className="bg-gradient-to-r from-primary to-construction text-white" onClick={() => handleNovaTransacao("Entrada")}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Transação
+          </Button>
+          <Button variant="outline" onClick={() => setIsEditarObraOpen(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Editar Obra
+          </Button>
+        </div>
       </div>
 
       {/* Informações da Obra */}
@@ -518,6 +549,14 @@ const ObraDetalhes = () => {
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* Modal Editar Obra */}
+      <EditarObraDialog
+        open={isEditarObraOpen}
+        onOpenChange={setIsEditarObraOpen}
+        obra={obra}
+        onSuccess={handleSuccessEdit}
+      />
       </div>
     </div>
   );

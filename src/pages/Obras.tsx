@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { NovaObraDialog } from "@/components/NovaObraDialog";
+import { EditarObraDialog } from "@/components/EditarObraDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,8 @@ const Obras = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [isNovaObraOpen, setIsNovaObraOpen] = useState(false);
+  const [isEditarObraOpen, setIsEditarObraOpen] = useState(false);
+  const [obraSelecionada, setObraSelecionada] = useState<Obra | null>(null);
   const [obras, setObras] = useState<Obra[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -79,6 +82,21 @@ const Obras = () => {
         description: "Erro ao criar nova obra",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleEditarObra = (obra: Obra) => {
+    setObraSelecionada(obra);
+    setIsEditarObraOpen(true);
+  };
+
+  const handleSuccessEdit = async () => {
+    // Recarregar obras após edição
+    try {
+      const obrasData = await obterObras();
+      setObras(obrasData);
+    } catch (error) {
+      console.error("Erro ao recarregar obras:", error);
     }
   };
 
@@ -254,7 +272,12 @@ const Obras = () => {
                         <Eye className="h-4 w-4 mr-1" />
                         Detalhes
                       </Button>
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => handleEditarObra(obra)}
+                      >
                         <Edit className="h-4 w-4 mr-1" />
                         Editar
                       </Button>
@@ -282,6 +305,14 @@ const Obras = () => {
         open={isNovaObraOpen}
         onOpenChange={setIsNovaObraOpen}
         onSubmit={handleNovaObra}
+      />
+
+      {/* Modal Editar Obra */}
+      <EditarObraDialog
+        open={isEditarObraOpen}
+        onOpenChange={setIsEditarObraOpen}
+        obra={obraSelecionada}
+        onSuccess={handleSuccessEdit}
       />
     </div>
   );
