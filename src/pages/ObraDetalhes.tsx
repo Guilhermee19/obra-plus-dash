@@ -414,8 +414,8 @@ const ObraDetalhes = () => {
         </div>
 
         {/* Container com scroll horizontal para as tabelas */}
-        <div className="w-full max-h-[600px] overflow-y-auto overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent rounded-lg border border-border bg-muted/20 p-4">
-          <div className="flex gap-4 min-w-max pb-2">
+        <div className="w-full rounded-lg border border-border bg-muted/20 p-4">
+          <div className="flex gap-4 min-w-max pb-2 max-h-[600px] overflow-y-auto overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
               {/* Tabelas de Entradas */}
               {obra?.configuracaoTabelas.entradas.map(tabela => 
                 renderTransacaoTable(tabela)
