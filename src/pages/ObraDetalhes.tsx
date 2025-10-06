@@ -415,7 +415,8 @@ const ObraDetalhes = () => {
 
         {/* Container com scroll horizontal para as tabelas */}
         <div className="w-full rounded-lg border border-border bg-muted/20 p-4 max-w-[calc(100vw-350px)]">
-          <div className="flex gap-4 min-w-max pb-2 max-h-[600px] overflow-x-auto overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+          <div className="flex gap-4 pb-2 max-h-[600px] overflow-x-auto overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent w-full">
+            <div className="flex gap-4 min-w-max">
               {/* Tabelas de Entradas */}
               {obra?.configuracaoTabelas.entradas.map(tabela => 
                 renderTransacaoTable(tabela)
@@ -426,6 +427,7 @@ const ObraDetalhes = () => {
                 renderTransacaoTable(tabela)
               )}
             </div>
+          </div>
         </div>
 
         {/* Resumo das Tabelas */}
