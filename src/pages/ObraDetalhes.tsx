@@ -360,28 +360,28 @@ const ObraDetalhes = () => {
       </Card>
 
       {/* Resumo Financeiro */}
-      <div className="grid grid-cols-3 gap-2 md:gap-4">
-        <Card>
-          <CardContent className="p-3 md:p-4">
+      <div className="grid grid-cols-3 gap-2">
+        <Card className="bg-income/5">
+          <CardContent className="p-2">
             <div className="text-center">
-              <p className="text-xs md:text-sm text-muted-foreground mb-1">Entradas</p>
-              <p className="text-sm md:text-xl font-bold text-income">{formatCurrency(resumoFinanceiro.totalEntradas)}</p>
+              <p className="text-[10px] text-muted-foreground mb-0.5">Entradas</p>
+              <p className="text-sm md:text-base font-bold text-income">{formatCurrency(resumoFinanceiro.totalEntradas)}</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-3 md:p-4">
+        <Card className="bg-expense/5">
+          <CardContent className="p-2">
             <div className="text-center">
-              <p className="text-xs md:text-sm text-muted-foreground mb-1">Saídas</p>
-              <p className="text-sm md:text-xl font-bold text-expense">{formatCurrency(resumoFinanceiro.totalSaidas)}</p>
+              <p className="text-[10px] text-muted-foreground mb-0.5">Saídas</p>
+              <p className="text-sm md:text-base font-bold text-expense">{formatCurrency(resumoFinanceiro.totalSaidas)}</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-3 md:p-4">
+        <Card className={resumoFinanceiro.saldo >= 0 ? 'bg-income/5' : 'bg-expense/5'}>
+          <CardContent className="p-2">
             <div className="text-center">
-              <p className="text-xs md:text-sm text-muted-foreground mb-1">Saldo</p>
-              <p className={`text-sm md:text-xl font-bold ${resumoFinanceiro.saldo >= 0 ? 'text-income' : 'text-expense'}`}>
+              <p className="text-[10px] text-muted-foreground mb-0.5">Saldo</p>
+              <p className={`text-sm md:text-base font-bold ${resumoFinanceiro.saldo >= 0 ? 'text-income' : 'text-expense'}`}>
                 {formatCurrency(resumoFinanceiro.saldo)}
               </p>
             </div>
