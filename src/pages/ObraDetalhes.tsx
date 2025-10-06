@@ -324,31 +324,36 @@ const ObraDetalhes = () => {
       </div>
 
       {/* Informações da Obra */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Informações da Obra</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Cliente:</span>
-              <span className="font-medium">{obra.cliente}</span>
+      <Card className="bg-muted/30">
+        <CardContent className="p-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            <div className="flex items-center gap-1.5">
+              <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-muted-foreground text-[10px]">Cliente</span>
+                <span className="font-medium truncate">{obra.cliente}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Local:</span>
-              <span className="font-medium">{obra.localizacao}</span>
+            <div className="flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-muted-foreground text-[10px]">Local</span>
+                <span className="font-medium truncate">{obra.localizacao}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Início:</span>
-              <span className="font-medium">{new Date(obra.dataInicio).toLocaleDateString('pt-BR')}</span>
+            <div className="flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-muted-foreground text-[10px]">Início</span>
+                <span className="font-medium">{new Date(obra.dataInicio).toLocaleDateString('pt-BR')}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Previsão:</span>
-              <span className="font-medium">{new Date(obra.dataPrevista).toLocaleDateString('pt-BR')}</span>
+            <div className="flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-muted-foreground text-[10px]">Previsão</span>
+                <span className="font-medium">{new Date(obra.dataPrevista).toLocaleDateString('pt-BR')}</span>
+              </div>
             </div>
           </div>
         </CardContent>
