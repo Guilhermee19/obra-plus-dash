@@ -225,24 +225,22 @@ const Obras = () => {
                   </div>
 
                   {/* Ações */}
-                  <div className="flex gap-2 lg:flex-col lg:w-24">
+                  <div className="flex gap-2">
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="flex-1"
                       onClick={() => navigate(`/obras/${obra.id}`)}
                     >
-                      <Eye className="h-4 w-4 lg:mr-0 mr-1" />
-                      <span className="lg:hidden">Detalhes</span>
+                      <Eye className="h-4 w-4 mr-1" />
+                      Detalhes
                     </Button>
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="flex-1"
                       onClick={() => handleEditarObra(obra)}
                     >
-                      <Edit className="h-4 w-4 lg:mr-0 mr-1" />
-                      <span className="lg:hidden">Editar</span>
+                      <Edit className="h-4 w-4 mr-1" />
+                      Editar
                     </Button>
                   </div>
                 </div>
