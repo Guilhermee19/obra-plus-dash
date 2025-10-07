@@ -187,101 +187,63 @@ const Obras = () => {
             
             return (
             <Card key={obra.id} className="shadow-card hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-6">
-                  {/* Informações Principais */}
-                  <div className="flex-1 space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                      <div>
-                        <h3 className="font-bold text-xl text-foreground mb-1">{obra.nome}</h3>
-                        <p className="text-muted-foreground">Cliente: {obra.cliente}</p>
-                        <p className="text-muted-foreground text-sm">Responsável: {obra.responsavel}</p>
+              <CardContent className="p-4">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  {/* Cabeçalho e Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-lg text-foreground truncate">{obra.nome}</h3>
+                        <p className="text-sm text-muted-foreground">{obra.cliente}</p>
                       </div>
-                      <Badge className={`${getStatusColor(obra.status)} text-sm px-3 py-1`}>
+                      <Badge className={`${getStatusColor(obra.status)} text-xs px-2 py-0.5 shrink-0`}>
                         {obra.status}
                       </Badge>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-muted-foreground">{obra.localizacao}</span>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        <span className="truncate">{obra.localizacao}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-muted-foreground">Início: {new Date(obra.dataInicio).toLocaleDateString('pt-BR')}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-muted-foreground">Previsão: {new Date(obra.dataPrevista).toLocaleDateString('pt-BR')}</span>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>{new Date(obra.dataPrevista).toLocaleDateString('pt-BR')}</span>
                       </div>
                     </div>
 
                     {/* Progresso */}
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-muted-foreground">Progresso da Obra</span>
-                        <span className="text-sm font-semibold text-foreground">{obra.progresso}%</span>
-                      </div>
-                      <div className="bg-muted rounded-full h-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-muted rounded-full h-2">
                         <div 
-                          className="bg-gradient-to-r from-primary to-construction h-3 rounded-full transition-all duration-500 relative overflow-hidden"
+                          className="bg-gradient-to-r from-primary to-construction h-2 rounded-full transition-all"
                           style={{ width: `${obra.progresso}%` }}
-                        >
-                          <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
-                        </div>
+                        />
                       </div>
+                      <span className="text-xs font-medium text-foreground shrink-0">{obra.progresso}%</span>
                     </div>
                   </div>
 
-                  {/* Financeiro e Ações */}
-                  <div className="xl:w-80 space-y-4">
-                    {/* Resumo Financeiro */}
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="p-4 bg-income/10 rounded-lg text-center">
-                        <TrendingUp className="h-5 w-5 text-income mx-auto mb-2" />
-                        <p className="text-xs text-muted-foreground mb-1">Entradas</p>
-                        <p className="font-bold text-income">
-                          R$ {(entrada / 1000).toFixed(0)}k
-                        </p>
-                      </div>
-                      <div className="p-4 bg-expense/10 rounded-lg text-center">
-                        <TrendingDown className="h-5 w-5 text-expense mx-auto mb-2" />
-                        <p className="text-xs text-muted-foreground mb-1">Saídas</p>
-                        <p className="font-bold text-expense">
-                          R$ {(saida / 1000).toFixed(0)}k
-                        </p>
-                      </div>
-                      <div className="p-4 bg-primary/10 rounded-lg text-center">
-                        <DollarSign className="h-5 w-5 text-primary mx-auto mb-2" />
-                        <p className="text-xs text-muted-foreground mb-1">Saldo</p>
-                        <p className={`font-bold ${saldo >= 0 ? 'text-income' : 'text-expense'}`}>
-                          R$ {(Math.abs(saldo) / 1000).toFixed(0)}k
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Ações */}
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={() => navigate(`/obras/${obra.id}`)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        Detalhes
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={() => handleEditarObra(obra)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Editar
-                      </Button>
-                    </div>
+                  {/* Ações */}
+                  <div className="flex gap-2 lg:flex-col lg:w-24">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => navigate(`/obras/${obra.id}`)}
+                    >
+                      <Eye className="h-4 w-4 lg:mr-0 mr-1" />
+                      <span className="lg:hidden">Detalhes</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => handleEditarObra(obra)}
+                    >
+                      <Edit className="h-4 w-4 lg:mr-0 mr-1" />
+                      <span className="lg:hidden">Editar</span>
+                    </Button>
                   </div>
                 </div>
               </CardContent>
