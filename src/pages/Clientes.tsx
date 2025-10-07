@@ -261,10 +261,10 @@ const Clientes = () => {
                         <HardHat className="h-4 w-4" />
                         Obras ({cliente.obras.length})
                       </h4>
-                      <div className="space-y-2">
+                      <div className="flex flex-col md:flex-row gap-2">
                         {cliente.obras.map((obra) => (
-                          <div key={obra.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                            <span className="font-medium text-foreground">{obra.nome}</span>
+                          <div key={obra.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg md:w-auto md:flex-1">
+                            <span className="font-medium text-foreground text-sm">{obra.nome}</span>
                             <Badge className={getStatusColor(obra.status)} variant="outline">
                               {obra.status}
                             </Badge>
