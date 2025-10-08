@@ -14,7 +14,7 @@ const AppLayout = () => {
           {/* Header */}
           <header className="h-16 flex items-center justify-between border-b bg-card px-4 md:px-6">
             <div className="flex items-center gap-3">
-              <SidebarTrigger className="lg:hidden" />
+              <SidebarTrigger />
               <div className="flex items-center gap-2">
                 <Building2 className="h-6 w-6 text-primary" />
                 <h1 className="font-bold text-lg text-foreground">
