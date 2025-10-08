@@ -8,6 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { 
@@ -44,6 +45,7 @@ const menuItems = [
 
 export function AppSidebar() {
   const location = useLocation();
+  const { open } = useSidebar();
   
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -53,16 +55,21 @@ export function AppSidebar() {
   return (
     <Sidebar className="w-64" collapsible="icon">
       <SidebarContent className="bg-card border-r">
-        {/* Logo */}
+        {/* Logo e Botão de Recolher */}
         <div className="p-4 border-b">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-construction rounded-lg flex items-center justify-center">
-              <Building2 className="h-4 w-4 text-white" />
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary to-construction rounded-lg flex items-center justify-center">
+                <Building2 className="h-4 w-4 text-white" />
+              </div>
+              {open && (
+                <div>
+                  <h2 className="font-bold text-sm text-foreground">ObrasPro</h2>
+                  <p className="text-xs text-muted-foreground">Gestão Inteligente</p>
+                </div>
+              )}
             </div>
-            <div>
-              <h2 className="font-bold text-sm text-foreground">ObrasPro</h2>
-              <p className="text-xs text-muted-foreground">Gestão Inteligente</p>
-            </div>
+            <SidebarTrigger />
           </div>
         </div>
 
@@ -89,7 +96,7 @@ export function AppSidebar() {
                         `}
                       >
                         <item.icon className="h-5 w-5" />
-                        <span className="font-medium">{item.title}</span>
+                        {open && <span className="font-medium">{item.title}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
