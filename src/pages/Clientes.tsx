@@ -1,95 +1,78 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import NovoClienteDialog from "@/components/NovoClienteDialog";
+import EditarClienteDialog from "@/components/EditarClienteDialog";
+import { obterClientes, deletarCliente } from "@/services/clienteService";
+import { Cliente } from "@/types/cliente";
 import { 
   Plus, 
   Search, 
   Phone,
   Mail,
   MapPin,
-  Building,
   Eye,
   Edit,
-  HardHat
+  HardHat,
+  Trash2
 } from "lucide-react";
 
-// Dados mockados de clientes
-const mockClientes = [
-  {
-    id: 1,
-    nome: "João Silva",
-    email: "joao@email.com",
-    telefone: "(11) 99999-1111",
-    endereco: "Rua das Flores, 123 - Zona Sul, SP",
-    tipo: "Pessoa Física",
-    obras: [
-      { id: 1, nome: "Residencial Vila Nova", status: "Em Andamento" }
-    ],
-    valorTotal: 45000,
-    dataUltimaObra: "15/01/2024"
-  },
-  {
-    id: 2,
-    nome: "Maria Santos",
-    email: "maria.santos@empresa.com",
-    telefone: "(11) 99999-2222",
-    endereco: "Av. Paulista, 1000 - Centro, SP",
-    tipo: "Pessoa Física",
-    obras: [
-      { id: 2, nome: "Comercial Center Point", status: "Planejamento" }
-    ],
-    valorTotal: 125000,
-    dataUltimaObra: "22/02/2024"
-  },
-  {
-    id: 3,
-    nome: "Pedro Costa",
-    email: "pedro.costa@gmail.com",
-    telefone: "(11) 99999-3333",
-    endereco: "Rua dos Pinheiros, 456 - Zona Norte, SP",
-    tipo: "Pessoa Física",
-    obras: [
-      { id: 3, nome: "Casa Moderna Premium", status: "Finalizada" }
-    ],
-    valorTotal: 78000,
-    dataUltimaObra: "08/11/2023"
-  },
-  {
-    id: 4,
-    nome: "Indústrias ABC Ltda",
-    email: "contato@industriasabc.com.br",
-    telefone: "(11) 3333-4444",
-    endereco: "Rod. Industrial, Km 15 - Zona Industrial, SP",
-    tipo: "Pessoa Jurídica",
-    obras: [
-      { id: 4, nome: "Reforma Industrial Matriz", status: "Em Andamento" }
-    ],
-    valorTotal: 95000,
-    dataUltimaObra: "10/03/2024"
-  },
-  {
-    id: 5,
-    nome: "Construtora Renovar",
-    email: "obras@renovar.com.br",
-    telefone: "(11) 4444-5555",
-    endereco: "Av. Marginal, 2500 - Vila Madalena, SP",
-    tipo: "Pessoa Jurídica",
-    obras: [
-      { id: 5, nome: "Condomínio Solar", status: "Planejamento" },
-      { id: 6, nome: "Prédio Comercial Beta", status: "Em Andamento" }
-    ],
-    valorTotal: 340000,
-    dataUltimaObra: "01/04/2024"
-  }
-];
-
 const Clientes = () => {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("Todos");
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [novoClienteOpen, setNovoClienteOpen] = useState(false);
+  const [editarClienteOpen, setEditarClienteOpen] = useState(false);
+  const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [clienteParaDeletar, setClienteParaDeletar] = useState<Cliente | null>(null);
 
-  const filteredClientes = mockClientes.filter(cliente => {
+  useEffect(() => {
+    carregarClientes();
+  }, []);
+
+  const carregarClientes = async () => {
+    const clientesCarregados = await obterClientes();
+    setClientes(clientesCarregados);
+  };
+
+  const handleDeletarCliente = async () => {
+    if (!clienteParaDeletar) return;
+
+    try {
+      await deletarCliente(clienteParaDeletar.id);
+      toast({
+        title: "Cliente deletado",
+        description: `${clienteParaDeletar.nome} foi removido com sucesso.`,
+      });
+      await carregarClientes();
+      setDeleteDialogOpen(false);
+      setClienteParaDeletar(null);
+    } catch (error) {
+      toast({
+        title: "Erro ao deletar cliente",
+        description: "Ocorreu um erro ao deletar o cliente. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEditarClick = (cliente: Cliente) => {
+    setClienteSelecionado(cliente);
+    setEditarClienteOpen(true);
+  };
+
+  const handleDeleteClick = (cliente: Cliente) => {
+    setClienteParaDeletar(cliente);
+    setDeleteDialogOpen(true);
+  };
+
+  const filteredClientes = clientes.filter(cliente => {
     const matchesSearch = cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          cliente.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === "Todos" || cliente.tipo === typeFilter;
@@ -121,7 +104,10 @@ const Clientes = () => {
           <h1 className="text-2xl font-bold text-foreground">Gestão de Clientes</h1>
           <p className="text-muted-foreground">Controle e gerencie sua carteira de clientes</p>
         </div>
-        <Button className="bg-gradient-to-r from-primary to-construction text-white shadow-lg hover:shadow-xl transition-all">
+        <Button 
+          onClick={() => setNovoClienteOpen(true)}
+          className="bg-gradient-to-r from-primary to-construction text-white shadow-lg hover:shadow-xl transition-all"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Novo Cliente
         </Button>
@@ -136,13 +122,13 @@ const Clientes = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{mockClientes.length}</div>
+            <div className="text-2xl font-bold text-foreground">{clientes.length}</div>
             <div className="flex gap-4 mt-2 text-xs">
               <span className="text-primary">
-                PF: {mockClientes.filter(c => c.tipo === "Pessoa Física").length}
+                PF: {clientes.filter(c => c.tipo === "Pessoa Física").length}
               </span>
               <span className="text-construction">
-                PJ: {mockClientes.filter(c => c.tipo === "Pessoa Jurídica").length}
+                PJ: {clientes.filter(c => c.tipo === "Pessoa Jurídica").length}
               </span>
             </div>
           </CardContent>
@@ -155,11 +141,7 @@ const Clientes = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
-              {mockClientes.reduce((acc, cliente) => 
-                acc + cliente.obras.filter(obra => obra.status !== "Finalizada").length, 0
-              )}
-            </div>
+            <div className="text-2xl font-bold text-foreground">0</div>
             <p className="text-xs text-muted-foreground mt-1">
               Em andamento + planejamento
             </p>
@@ -174,7 +156,7 @@ const Clientes = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-income">
-              R$ {mockClientes.reduce((acc, cliente) => acc + cliente.valorTotal, 0).toLocaleString('pt-BR')}
+              R$ {clientes.reduce((acc, cliente) => acc + (cliente.valorTotal || 0), 0).toLocaleString('pt-BR')}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Soma de todas as obras
@@ -255,44 +237,35 @@ const Clientes = () => {
                       </div>
                     </div>
 
-                    {/* Obras do Cliente */}
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                        <HardHat className="h-4 w-4" />
-                        Obras ({cliente.obras.length})
-                      </h4>
-                      <div className="flex flex-col md:flex-row gap-2">
-                        {cliente.obras.map((obra) => (
-                          <div key={obra.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg md:w-auto md:flex-1">
-                            <span className="font-medium text-foreground text-sm">{obra.nome}</span>
-                            <Badge className={getStatusColor(obra.status)} variant="outline">
-                              {obra.status}
-                            </Badge>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </div>
 
                   {/* Ações e Info Adicional */}
                   <div className="lg:w-64 space-y-4">
-                    <div className="p-4 bg-muted/30 rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">Última obra</p>
-                      <p className="font-semibold text-foreground">{cliente.dataUltimaObra}</p>
-                    </div>
+                    {cliente.dataUltimaObra && (
+                      <div className="p-4 bg-muted/30 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Última obra</p>
+                        <p className="font-semibold text-foreground">{cliente.dataUltimaObra}</p>
+                      </div>
+                    )}
                     
                     <div className="flex flex-col gap-2">
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Eye className="h-4 w-4 mr-2" />
-                        Ver Detalhes
-                      </Button>
-                      <Button variant="outline" size="sm" className="w-full">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => handleEditarClick(cliente)}
+                      >
                         <Edit className="h-4 w-4 mr-2" />
                         Editar Cliente
                       </Button>
-                      <Button size="sm" className="w-full bg-gradient-to-r from-primary to-construction text-white">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Nova Obra
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => handleDeleteClick(cliente)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Deletar Cliente
                       </Button>
                     </div>
                   </div>
@@ -302,6 +275,38 @@ const Clientes = () => {
           ))
         )}
       </div>
+
+      {/* Dialogs */}
+      <NovoClienteDialog
+        open={novoClienteOpen}
+        onOpenChange={setNovoClienteOpen}
+        onClienteCriado={carregarClientes}
+      />
+
+      <EditarClienteDialog
+        open={editarClienteOpen}
+        onOpenChange={setEditarClienteOpen}
+        cliente={clienteSelecionado}
+        onClienteAtualizado={carregarClientes}
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja deletar o cliente <strong>{clienteParaDeletar?.nome}</strong>? 
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeletarCliente} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Deletar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
