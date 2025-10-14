@@ -21,7 +21,10 @@ import {
   MapPin,
   Settings,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  Pencil,
+  Check,
+  X
 } from "lucide-react";
 import { Obra, ConfiguracaoTabelas, TabelaConfig } from "@/types/obra";
 import { atualizarObra, limparTransacoesTabelas } from "@/services/obraService";
@@ -55,6 +58,7 @@ export const EditarObraDialog = ({ open, onOpenChange, obra, onSuccess }: Editar
   });
   const [novaTabela, setNovaTabela] = useState({ nome: "", tipo: "entrada" as "entrada" | "saida" });
   const [isLoading, setIsLoading] = useState(false);
+  const [editandoTabela, setEditandoTabela] = useState<{ id: string; nome: string } | null>(null);
 
   const form = useForm<EditarObraFormData>({
     resolver: zodResolver(editarObraSchema),
@@ -131,6 +135,40 @@ export const EditarObraDialog = ({ open, onOpenChange, obra, onSuccess }: Editar
       title: "Sucesso",
       description: `Tabela de ${tipo} removida`
     });
+  };
+
+  const iniciarEdicaoTabela = (tabela: TabelaConfig) => {
+    setEditandoTabela({ id: tabela.id, nome: tabela.nome });
+  };
+
+  const cancelarEdicaoTabela = () => {
+    setEditandoTabela(null);
+  };
+
+  const salvarEdicaoTabela = (tipo: "entrada" | "saida") => {
+    if (!editandoTabela || !editandoTabela.nome.trim()) {
+      toast({
+        title: "Erro",
+        description: "Nome da tabela não pode estar vazio",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setConfiguracaoTabelas(prev => ({
+      ...prev,
+      [tipo === "entrada" ? "entradas" : "saidas"]: 
+        prev[tipo === "entrada" ? "entradas" : "saidas"].map(t => 
+          t.id === editandoTabela.id ? { ...t, nome: editandoTabela.nome.trim() } : t
+        )
+    }));
+
+    toast({
+      title: "Sucesso",
+      description: "Tabela renomeada com sucesso"
+    });
+
+    setEditandoTabela(null);
   };
 
   const onSubmit = async (data: EditarObraFormData) => {
@@ -433,17 +471,55 @@ export const EditarObraDialog = ({ open, onOpenChange, obra, onSuccess }: Editar
                     <div className="space-y-2">
                       {configuracaoTabelas.entradas.map((tabela) => (
                         <div key={tabela.id} className="flex items-center justify-between p-3 border rounded-lg bg-income/5">
-                          <Badge variant="outline" className="text-income border-income/20">
-                            {tabela.nome}
-                          </Badge>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removerTabela(tabela.id, "entrada")}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {editandoTabela?.id === tabela.id ? (
+                            <div className="flex items-center gap-2 flex-1">
+                              <Input
+                                value={editandoTabela.nome}
+                                onChange={(e) => setEditandoTabela({ ...editandoTabela, nome: e.target.value })}
+                                className="h-8"
+                                autoFocus
+                              />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => salvarEdicaoTabela("entrada")}
+                                className="text-income hover:text-income"
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={cancelarEdicaoTabela}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <>
+                              <Badge variant="outline" className="text-income border-income/20">
+                                {tabela.nome}
+                              </Badge>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => iniciarEdicaoTabela(tabela)}
+                                  className="text-muted-foreground hover:text-foreground"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removerTabela(tabela.id, "entrada")}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -468,17 +544,55 @@ export const EditarObraDialog = ({ open, onOpenChange, obra, onSuccess }: Editar
                     <div className="space-y-2">
                       {configuracaoTabelas.saidas.map((tabela) => (
                         <div key={tabela.id} className="flex items-center justify-between p-3 border rounded-lg bg-expense/5">
-                          <Badge variant="outline" className="text-expense border-expense/20">
-                            {tabela.nome}
-                          </Badge>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removerTabela(tabela.id, "saida")}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {editandoTabela?.id === tabela.id ? (
+                            <div className="flex items-center gap-2 flex-1">
+                              <Input
+                                value={editandoTabela.nome}
+                                onChange={(e) => setEditandoTabela({ ...editandoTabela, nome: e.target.value })}
+                                className="h-8"
+                                autoFocus
+                              />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => salvarEdicaoTabela("saida")}
+                                className="text-expense hover:text-expense"
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={cancelarEdicaoTabela}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <>
+                              <Badge variant="outline" className="text-expense border-expense/20">
+                                {tabela.nome}
+                              </Badge>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => iniciarEdicaoTabela(tabela)}
+                                  className="text-muted-foreground hover:text-foreground"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removerTabela(tabela.id, "saida")}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </>
+                          )}
                         </div>
                       ))}
                     </div>
