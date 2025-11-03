@@ -3,6 +3,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Building2 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const AppLayout = () => {
   return (
@@ -22,6 +23,7 @@ const AppLayout = () => {
                 </h1>
               </div>
             </div>
+            <ThemeToggle />
           </header>
 
           {/* Content */}
