@@ -14,9 +14,9 @@ import {
   LayoutDashboard, 
   HardHat, 
   Users, 
-  Calculator,
   Building2,
-  TrendingUp
+  TrendingUp,
+  Settings
 } from "lucide-react";
 
 const menuItems = [
@@ -39,6 +39,11 @@ const menuItems = [
     title: "Relatórios", 
     url: "/relatorios", 
     icon: TrendingUp 
+  },
+  { 
+    title: "Configurações", 
+    url: "/configuracoes", 
+    icon: Settings 
   },
 ];
 
