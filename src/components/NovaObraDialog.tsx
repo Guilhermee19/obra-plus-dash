@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,6 +19,8 @@ const obraSchema = z.object({
   responsavel: z.string().min(1, "Responsável é obrigatório"),
   dataInicio: z.string().min(1, "Data de início é obrigatória"),
   dataPrevista: z.string().min(1, "Data prevista é obrigatória"),
+  entidade: z.enum(["ARF", "Manu", "Sem nota"]),
+  valorOrcado: z.string().optional(),
 });
 
 type ObraFormData = z.infer<typeof obraSchema>;
@@ -25,7 +28,17 @@ type ObraFormData = z.infer<typeof obraSchema>;
 interface NovaObraDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: ObraFormData & { configuracaoTabelas: ConfiguracaoTabelas }) => void;
+  onSubmit: (data: {
+    nome: string;
+    cliente: string;
+    localizacao: string;
+    responsavel: string;
+    dataInicio: string;
+    dataPrevista: string;
+    entidade: "ARF" | "Manu" | "Sem nota";
+    valorOrcado: number;
+    configuracaoTabelas: ConfiguracaoTabelas;
+  }) => void;
 }
 
 interface TabelaConfig {
@@ -54,6 +67,8 @@ export function NovaObraDialog({ open, onOpenChange, onSubmit }: NovaObraDialogP
       responsavel: "",
       dataInicio: "",
       dataPrevista: "",
+      entidade: "ARF",
+      valorOrcado: "",
     },
   });
 
@@ -90,7 +105,17 @@ export function NovaObraDialog({ open, onOpenChange, onSubmit }: NovaObraDialogP
   };
 
   const handleSubmit = (data: ObraFormData) => {
-    onSubmit({ ...data, configuracaoTabelas });
+    onSubmit({
+      nome: data.nome ?? "",
+      cliente: data.cliente ?? "",
+      localizacao: data.localizacao ?? "",
+      responsavel: data.responsavel ?? "",
+      dataInicio: data.dataInicio ?? "",
+      dataPrevista: data.dataPrevista ?? "",
+      entidade: data.entidade ?? "ARF",
+      valorOrcado: data.valorOrcado ? Number(data.valorOrcado) : 0,
+      configuracaoTabelas,
+    });
     form.reset();
     setConfiguracaoTabelas({
       entradas: [{ id: "1", nome: "Entradas Principais", tipo: "entrada" }],
@@ -193,6 +218,43 @@ export function NovaObraDialog({ open, onOpenChange, onSubmit }: NovaObraDialogP
                         <FormLabel className="text-sm">Data Prevista</FormLabel>
                         <FormControl>
                           <Input type="date" {...field} className="text-sm" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="entidade"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Entidade (faturamento)</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="ARF">ARF</SelectItem>
+                            <SelectItem value="Manu">Manu</SelectItem>
+                            <SelectItem value="Sem nota">Sem nota</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="valorOrcado"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Valor Orçado (R$)</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" placeholder="0,00" {...field} className="text-sm" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

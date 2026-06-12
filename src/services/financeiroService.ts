@@ -91,3 +91,74 @@ export const totalAPagarEmprestimos = (): number =>
 
 export const totalDespesasMes = (mes: string): number =>
   obterDespesas().filter((d) => d.mes === mes).reduce((s, d) => s + d.valor, 0);
+
+// ===================== CRUD =====================
+const saveNotas = (l: NotaFiscal[]) => localStorage.setItem(K_NOTAS, JSON.stringify(l));
+const saveDespesas = (l: DespesaMensal[]) => localStorage.setItem(K_DESP, JSON.stringify(l));
+const saveCaixa = (l: MovimentoCaixa[]) => localStorage.setItem(K_CAIXA, JSON.stringify(l));
+
+const nextId = <T extends { id: number }>(l: T[]) =>
+  l.length ? Math.max(...l.map((x) => x.id)) + 1 : 1;
+
+// Notas
+export const criarNota = (data: Omit<NotaFiscal, "id">): NotaFiscal => {
+  const l = obterNotas();
+  const nova = { ...data, id: nextId(l) };
+  l.push(nova);
+  saveNotas(l);
+  return nova;
+};
+export const atualizarNota = (id: number, data: Partial<NotaFiscal>): void => {
+  const l = obterNotas();
+  const i = l.findIndex((n) => n.id === id);
+  if (i >= 0) {
+    l[i] = { ...l[i], ...data };
+    saveNotas(l);
+  }
+};
+export const removerNota = (id: number): void => {
+  saveNotas(obterNotas().filter((n) => n.id !== id));
+};
+
+// Despesas
+export const criarDespesa = (data: Omit<DespesaMensal, "id">): DespesaMensal => {
+  const l = obterDespesas();
+  const nova = { ...data, id: nextId(l) };
+  l.push(nova);
+  saveDespesas(l);
+  return nova;
+};
+export const atualizarDespesa = (id: number, data: Partial<DespesaMensal>): void => {
+  const l = obterDespesas();
+  const i = l.findIndex((d) => d.id === id);
+  if (i >= 0) {
+    l[i] = { ...l[i], ...data };
+    saveDespesas(l);
+  }
+};
+export const removerDespesa = (id: number): void => {
+  saveDespesas(obterDespesas().filter((d) => d.id !== id));
+};
+
+// Caixa
+export const criarMovimento = (data: Omit<MovimentoCaixa, "id">): MovimentoCaixa => {
+  const l = obterCaixa();
+  const novo = { ...data, id: nextId(l) };
+  l.push(novo);
+  saveCaixa(l);
+  return novo;
+};
+export const removerMovimento = (id: number): void => {
+  saveCaixa(obterCaixa().filter((m) => m.id !== id));
+};
+
+export const CATEGORIAS_DESPESA = [
+  "Encargos/INSS",
+  "Veículo",
+  "Bancário",
+  "Cartão",
+  "Administrativo",
+  "Material",
+  "Impostos",
+  "Outros",
+];

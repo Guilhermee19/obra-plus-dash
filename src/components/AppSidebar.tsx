@@ -21,6 +21,8 @@ import {
   UserCog,
   FileText,
   Wallet,
+  FileSpreadsheet,
+  Truck,
 } from "lucide-react";
 
 const menuGroups = [
@@ -29,6 +31,7 @@ const menuGroups = [
     items: [
       { title: "Dashboard", url: "/", icon: LayoutDashboard },
       { title: "Obras", url: "/obras", icon: HardHat },
+      { title: "Orçamentos", url: "/orcamentos", icon: FileSpreadsheet },
       { title: "Clientes", url: "/clientes", icon: Users },
     ],
   },
@@ -44,6 +47,7 @@ const menuGroups = [
     items: [
       { title: "Notas Fiscais", url: "/notas-fiscais", icon: FileText },
       { title: "Financeiro", url: "/financeiro", icon: Wallet },
+      { title: "Fornecedores / PIX", url: "/fornecedores", icon: Truck },
       { title: "Relatórios", url: "/relatorios", icon: TrendingUp },
     ],
   },

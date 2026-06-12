@@ -389,6 +389,40 @@ const ObraDetalhes = () => {
         </Card>
       </div>
 
+      {/* Orçado x Realizado */}
+      {!!obra.valorOrcado && (
+        <Card className="shadow-card">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-foreground">Orçado × Realizado (saídas)</span>
+              <span className="text-xs text-muted-foreground">
+                {Math.min(100, Math.round((resumoFinanceiro.totalSaidas / obra.valorOrcado) * 100))}% do orçado
+              </span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-3 mb-2 overflow-hidden">
+              <div
+                className={`h-3 rounded-full transition-all ${
+                  resumoFinanceiro.totalSaidas > obra.valorOrcado ? "bg-expense" : "bg-primary"
+                }`}
+                style={{ width: `${Math.min(100, (resumoFinanceiro.totalSaidas / obra.valorOrcado) * 100)}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">
+                Orçado: <span className="font-semibold text-foreground">{formatCurrency(obra.valorOrcado)}</span>
+              </span>
+              <span className="text-muted-foreground">
+                Realizado: <span className="font-semibold text-expense">{formatCurrency(resumoFinanceiro.totalSaidas)}</span>
+              </span>
+              <span className={`font-semibold ${obra.valorOrcado - resumoFinanceiro.totalSaidas >= 0 ? "text-income" : "text-expense"}`}>
+                {obra.valorOrcado - resumoFinanceiro.totalSaidas >= 0 ? "Disponível: " : "Estouro: "}
+                {formatCurrency(Math.abs(obra.valorOrcado - resumoFinanceiro.totalSaidas))}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Filtros */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">

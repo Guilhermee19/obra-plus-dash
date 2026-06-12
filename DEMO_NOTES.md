@@ -14,12 +14,32 @@ Modelo **visual / demo, sem back-end** (tudo em `localStorage`, seguindo o padr�
 - `src/types/`: `funcionario.ts`, `folha.ts`, `financeiro.ts`
 - `src/services/`: `funcionarioService.ts`, `folhaService.ts`, `financeiroService.ts` (todos com **seed** de dados de demonstração)
 - `src/pages/`: `Funcionarios.tsx`, `FolhaSemanal.tsx`, `NotasFiscais.tsx`, `Financeiro.tsx`
+- `src/components/` (diálogos add/editar): `FuncionarioDialog.tsx`, `NotaFiscalDialog.tsx`, `DespesaDialog.tsx`, `MovimentoCaixaDialog.tsx`
 - `src/lib/format.ts`: helpers `formatBRL` / `formatData`
+
+## Módulos de Orçamentos e Fornecedores
+- **Orçamentos** (`/orcamentos`): propostas por obra/cliente com itens dinâmicos (descrição, unidade, qtd, valor unitário, total ao vivo), número automático (`ORC-AAAA-000`), status (Rascunho/Enviado/Aprovado/Recusado), filtro por status e KPIs por status. Novo/editar/excluir.
+- **Fornecedores / PIX** (`/fornecedores`): cadastro de fornecedores e quentinhas com categoria, contato, chave PIX (com botão de copiar) e banco. Busca, filtro por categoria, novo/editar/excluir.
+- Arquivos: `types/orcamento.ts`, `types/fornecedor.ts`; `services/orcamentoService.ts`, `services/fornecedorService.ts`; `pages/Orcamentos.tsx`, `pages/Fornecedores.tsx`; `components/OrcamentoDialog.tsx`, `components/FornecedorDialog.tsx`. Seeds representativos (PIX fictícios).
+
+## CRUD (adicionar / editar / excluir)
+- **Funcionários**: botão "Novo Funcionário", editar e excluir por linha (com confirmação), total/dia calculado ao vivo.
+- **Notas Fiscais**: "Nova Nota", editar/excluir, campo "data de pagamento" vazio = a receber.
+- **Financeiro**: "Nova despesa" (editar/excluir) e "Novo lançamento" no caixa (excluir).
+- Tudo persiste em `localStorage` via os `services`.
+
+## Ajustes em Obras e Clientes (com base nas planilhas)
+- **Obra** ganhou **entidade** (ARF / Manu / Sem nota) e **valor orçado** — aparecem na lista (badge + orçado) e no diálogo de Nova Obra; em ObraDetalhes há uma barra **Orçado × Realizado** com saldo disponível/estouro.
+- **Cliente** ganhou campo **Bairro** (presente em São Conrado, Leblon, etc.) nos diálogos de novo/editar cliente.
 
 ## Arquivos alterados
 - `src/App.tsx`: novas rotas
 - `src/components/AppSidebar.tsx`: menu agrupado (Operação · RH · Financeiro · Sistema)
-- `public/dados-obras.json`: reseed com obras reais da ARF (São Conrado, Aterro do Flamengo, Leblon, etc.) + transações
+- `src/components/NovaObraDialog.tsx`, `NovoClienteDialog.tsx`, `EditarClienteDialog.tsx`: novos campos
+- `src/pages/Obras.tsx`, `ObraDetalhes.tsx`, `Dashboard.tsx`: entidade/orçado
+- `src/services/obraService.ts`, `financeiroService.ts`: novos campos e CRUD
+- `src/types/obra.ts`, `cliente.ts`: novos campos
+- `public/dados-obras.json`: reseed com obras reais da ARF (entidade + orçado)
 
 ## Importante sobre os dados
 Os dados da demo são **representativos** — **não** uso os CPFs e chaves PIX reais das planilhas (privacidade/LGPD). Os números de PIX são fictícios (`(21) 9 0000-000X`). Os dados reais entram depois via importação.

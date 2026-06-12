@@ -13,6 +13,8 @@ import Funcionarios from "./pages/Funcionarios";
 import FolhaSemanal from "./pages/FolhaSemanal";
 import NotasFiscais from "./pages/NotasFiscais";
 import Financeiro from "./pages/Financeiro";
+import Orcamentos from "./pages/Orcamentos";
+import Fornecedores from "./pages/Fornecedores";
 import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
@@ -36,6 +38,8 @@ const App = () => (
               <Route path="folha-semanal" element={<FolhaSemanal />} />
               <Route path="notas-fiscais" element={<NotasFiscais />} />
               <Route path="financeiro" element={<Financeiro />} />
+              <Route path="orcamentos" element={<Orcamentos />} />
+              <Route path="fornecedores" element={<Fornecedores />} />
               <Route path="relatorios" element={<Relatorios />} />
               <Route path="configuracoes" element={<Configuracoes />} />
             </Route>

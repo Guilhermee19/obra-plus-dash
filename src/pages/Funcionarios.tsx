@@ -11,10 +11,35 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users, Search, HardHat, DollarSign, UtensilsCrossed } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Users,
+  Search,
+  HardHat,
+  DollarSign,
+  UtensilsCrossed,
+  Plus,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { Funcionario } from "@/types/funcionario";
-import { obterFuncionarios, totalDiaria } from "@/services/funcionarioService";
+import {
+  obterFuncionarios,
+  totalDiaria,
+  removerFuncionario,
+} from "@/services/funcionarioService";
+import FuncionarioDialog from "@/components/FuncionarioDialog";
 import { formatBRL } from "@/lib/format";
+import { useToast } from "@/hooks/use-toast";
 
 const cargoColor = (cargo: string) => {
   switch (cargo) {
@@ -28,12 +53,15 @@ const cargoColor = (cargo: string) => {
 };
 
 const Funcionarios = () => {
+  const { toast } = useToast();
   const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);
   const [busca, setBusca] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editando, setEditando] = useState<Funcionario | null>(null);
+  const [excluir, setExcluir] = useState<Funcionario | null>(null);
 
-  useEffect(() => {
-    setFuncionarios(obterFuncionarios());
-  }, []);
+  const recarregar = () => setFuncionarios(obterFuncionarios());
+  useEffect(() => recarregar(), []);
 
   const filtrados = funcionarios.filter(
     (f) =>
@@ -47,9 +75,25 @@ const Funcionarios = () => {
     0
   );
 
+  const novo = () => {
+    setEditando(null);
+    setDialogOpen(true);
+  };
+  const editar = (f: Funcionario) => {
+    setEditando(f);
+    setDialogOpen(true);
+  };
+  const confirmarExclusao = () => {
+    if (excluir) {
+      removerFuncionario(excluir.id);
+      toast({ title: "Funcionário removido", description: `${excluir.nome} foi removido.` });
+      setExcluir(null);
+      recarregar();
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Cabeçalho */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -60,13 +104,12 @@ const Funcionarios = () => {
             Cadastro da equipe, diárias e dados de pagamento
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary-dark">
-          <Users className="h-4 w-4 mr-2" />
+        <Button className="bg-primary hover:bg-primary-dark" onClick={novo}>
+          <Plus className="h-4 w-4 mr-2" />
           Novo Funcionário
         </Button>
       </div>
 
-      {/* KPIs */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-card">
           <CardContent className="p-4 flex items-center gap-3">
@@ -103,7 +146,6 @@ const Funcionarios = () => {
         </Card>
       </div>
 
-      {/* Busca */}
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
@@ -114,7 +156,6 @@ const Funcionarios = () => {
         />
       </div>
 
-      {/* Tabela */}
       <Card className="shadow-card">
         <CardHeader>
           <CardTitle className="text-base">Tabela de diárias</CardTitle>
@@ -132,6 +173,7 @@ const Funcionarios = () => {
                   <TableHead className="text-right">Total/dia</TableHead>
                   <TableHead>PIX</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -161,6 +203,21 @@ const Funcionarios = () => {
                         <Badge variant="outline">Inativo</Badge>
                       )}
                     </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => editar(f)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-expense hover:text-expense"
+                          onClick={() => setExcluir(f)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -168,6 +225,33 @@ const Funcionarios = () => {
           </div>
         </CardContent>
       </Card>
+
+      <FuncionarioDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        funcionario={editando}
+        onSaved={recarregar}
+      />
+
+      <AlertDialog open={!!excluir} onOpenChange={(o) => !o && setExcluir(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover funcionário</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover {excluir?.nome}? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmarExclusao}
+              className="bg-expense hover:bg-expense/90"
+            >
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

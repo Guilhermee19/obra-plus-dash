@@ -61,6 +61,8 @@ const Obras = () => {
     responsavel: string;
     dataInicio: string;
     dataPrevista: string;
+    entidade?: "ARF" | "Manu" | "Sem nota";
+    valorOrcado?: number;
     configuracaoTabelas: ConfiguracaoTabelas;
   }) => {
     try {
@@ -196,9 +198,16 @@ const Obras = () => {
                         <h3 className="font-bold text-lg text-foreground truncate">{obra.nome}</h3>
                         <p className="text-sm text-muted-foreground">{obra.cliente}</p>
                       </div>
-                      <Badge className={`${getStatusColor(obra.status)} text-xs px-2 py-0.5 shrink-0`}>
-                        {obra.status}
-                      </Badge>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <Badge className={`${getStatusColor(obra.status)} text-xs px-2 py-0.5`}>
+                          {obra.status}
+                        </Badge>
+                        {obra.entidade && (
+                          <Badge variant="outline" className="text-xs px-2 py-0.5">
+                            {obra.entidade}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
@@ -210,6 +219,12 @@ const Obras = () => {
                         <Calendar className="h-3 w-3" />
                         <span>{new Date(obra.dataPrevista).toLocaleDateString('pt-BR')}</span>
                       </div>
+                      {!!obra.valorOrcado && (
+                        <div className="flex items-center gap-1">
+                          <DollarSign className="h-3 w-3" />
+                          <span>Orçado: {obra.valorOrcado.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Progresso */}

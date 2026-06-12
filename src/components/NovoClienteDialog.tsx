@@ -22,6 +22,7 @@ const NovoClienteDialog = ({ open, onOpenChange, onClienteCriado }: NovoClienteD
     email: "",
     telefone: "",
     endereco: "",
+    bairro: "",
     tipo: "Pessoa Física",
     cpfCnpj: ""
   });
@@ -43,6 +44,7 @@ const NovoClienteDialog = ({ open, onOpenChange, onClienteCriado }: NovoClienteD
         email: "",
         telefone: "",
         endereco: "",
+        bairro: "",
         tipo: "Pessoa Física",
         cpfCnpj: ""
       });
@@ -138,6 +140,16 @@ const NovoClienteDialog = ({ open, onOpenChange, onClienteCriado }: NovoClienteD
                 onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
                 required
                 placeholder="Rua, número - Bairro, Cidade - UF"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bairro">Bairro</Label>
+              <Input
+                id="bairro"
+                value={formData.bairro}
+                onChange={(e) => setFormData({ ...formData, bairro: e.target.value })}
+                placeholder="Ex: São Conrado"
               />
             </div>
           </div>
