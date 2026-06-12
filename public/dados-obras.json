@@ -40,7 +40,9 @@
             "tipo": "saida"
           }
         ]
-      }
+      },
+      "entidade": "ARF",
+      "valorOrcado": 480000
     },
     {
       "id": 2,
@@ -82,7 +84,9 @@
             "tipo": "saida"
           }
         ]
-      }
+      },
+      "entidade": "Manu",
+      "valorOrcado": 476000
     },
     {
       "id": 3,
@@ -124,7 +128,9 @@
             "tipo": "saida"
           }
         ]
-      }
+      },
+      "entidade": "ARF",
+      "valorOrcado": 320000
     },
     {
       "id": 4,
@@ -166,7 +172,9 @@
             "tipo": "saida"
           }
         ]
-      }
+      },
+      "entidade": "Manu",
+      "valorOrcado": 250000
     },
     {
       "id": 5,
@@ -208,7 +216,9 @@
             "tipo": "saida"
           }
         ]
-      }
+      },
+      "entidade": "ARF",
+      "valorOrcado": 420000
     },
     {
       "id": 6,
@@ -250,7 +260,9 @@
             "tipo": "saida"
           }
         ]
-      }
+      },
+      "entidade": "Sem nota",
+      "valorOrcado": 300000
     }
   ],
   "transacoes": [

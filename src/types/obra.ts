@@ -29,6 +29,8 @@ export interface Obra {
   dataInicio: string;
   dataPrevista: string;
   responsavel: string;
+  entidade?: "ARF" | "Manu" | "Sem nota";
+  valorOrcado?: number;
   configuracaoTabelas: ConfiguracaoTabelas;
 }
 
@@ -39,5 +41,7 @@ export interface NovaObraData {
   responsavel: string;
   dataInicio: string;
   dataPrevista: string;
+  entidade?: "ARF" | "Manu" | "Sem nota";
+  valorOrcado?: number;
   configuracaoTabelas: ConfiguracaoTabelas;
 }

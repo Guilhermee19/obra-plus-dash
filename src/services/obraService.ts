@@ -70,6 +70,8 @@ export const criarNovaObra = async (
     responsavel: string;
     dataInicio: string;
     dataPrevista: string;
+    entidade?: "ARF" | "Manu" | "Sem nota";
+    valorOrcado?: number;
     configuracaoTabelas: ConfiguracaoTabelas;
   }
 ): Promise<Obra> => {
@@ -85,6 +87,8 @@ export const criarNovaObra = async (
     dataInicio: dadosObra.dataInicio,
     dataPrevista: dadosObra.dataPrevista,
     responsavel: dadosObra.responsavel,
+    entidade: dadosObra.entidade ?? "ARF",
+    valorOrcado: dadosObra.valorOrcado ?? 0,
     configuracaoTabelas: dadosObra.configuracaoTabelas
   };
 

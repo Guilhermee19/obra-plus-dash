@@ -62,6 +62,8 @@ const Dashboard = () => {
     responsavel: string;
     dataInicio: string;
     dataPrevista: string;
+    entidade?: "ARF" | "Manu" | "Sem nota";
+    valorOrcado?: number;
     configuracaoTabelas: ConfiguracaoTabelas;
   }) => {
     try {

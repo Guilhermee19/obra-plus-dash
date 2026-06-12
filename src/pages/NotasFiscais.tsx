@@ -11,10 +11,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileText, Plus, TrendingUp, Clock, CheckCircle2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { FileText, Plus, TrendingUp, Clock, CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import { NotaFiscal, Entidade } from "@/types/financeiro";
-import { obterNotas, totalAReceber, totalRecebido } from "@/services/financeiroService";
+import {
+  obterNotas,
+  totalAReceber,
+  totalRecebido,
+  removerNota,
+} from "@/services/financeiroService";
+import NotaFiscalDialog from "@/components/NotaFiscalDialog";
 import { formatBRL, formatData } from "@/lib/format";
+import { useToast } from "@/hooks/use-toast";
 
 const entidadeColor = (e: Entidade) => {
   switch (e) {
@@ -25,12 +42,15 @@ const entidadeColor = (e: Entidade) => {
 };
 
 const NotasFiscais = () => {
+  const { toast } = useToast();
   const [notas, setNotas] = useState<NotaFiscal[]>([]);
   const [filtro, setFiltro] = useState<"todas" | Entidade>("todas");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editando, setEditando] = useState<NotaFiscal | null>(null);
+  const [excluir, setExcluir] = useState<NotaFiscal | null>(null);
 
-  useEffect(() => {
-    setNotas(obterNotas());
-  }, []);
+  const recarregar = () => setNotas(obterNotas());
+  useEffect(() => recarregar(), []);
 
   const filtradas =
     filtro === "todas" ? notas : notas.filter((n) => n.entidade === filtro);
@@ -38,6 +58,17 @@ const NotasFiscais = () => {
   const aReceber = totalAReceber();
   const recebido = totalRecebido();
   const qtdAbertas = notas.filter((n) => !n.dataPagamento).length;
+
+  const novo = () => { setEditando(null); setDialogOpen(true); };
+  const editar = (n: NotaFiscal) => { setEditando(n); setDialogOpen(true); };
+  const confirmarExclusao = () => {
+    if (excluir) {
+      removerNota(excluir.id);
+      toast({ title: "Nota removida" });
+      setExcluir(null);
+      recarregar();
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -51,13 +82,12 @@ const NotasFiscais = () => {
             Notas emitidas por ARF e Manu, competência e pagamento
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary-dark">
+        <Button className="bg-primary hover:bg-primary-dark" onClick={novo}>
           <Plus className="h-4 w-4 mr-2" />
           Nova Nota
         </Button>
       </div>
 
-      {/* KPIs */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="shadow-card">
           <CardContent className="p-4 flex items-center gap-3">
@@ -119,6 +149,7 @@ const NotasFiscais = () => {
                   <TableHead>Competência</TableHead>
                   <TableHead>Pagamento</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -143,6 +174,21 @@ const NotasFiscais = () => {
                     <TableCell className="text-right font-semibold">
                       {formatBRL(n.valor)}
                     </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => editar(n)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-expense hover:text-expense"
+                          onClick={() => setExcluir(n)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -150,6 +196,30 @@ const NotasFiscais = () => {
           </div>
         </CardContent>
       </Card>
+
+      <NotaFiscalDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        nota={editando}
+        onSaved={recarregar}
+      />
+
+      <AlertDialog open={!!excluir} onOpenChange={(o) => !o && setExcluir(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover nota</AlertDialogTitle>
+            <AlertDialogDescription>
+              Remover a nota de {excluir?.cliente} ({formatBRL(excluir?.valor ?? 0)})?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmarExclusao} className="bg-expense hover:bg-expense/90">
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

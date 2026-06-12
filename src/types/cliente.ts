@@ -4,6 +4,7 @@ export interface Cliente {
   email: string;
   telefone: string;
   endereco: string;
+  bairro?: string;
   tipo: "Pessoa Física" | "Pessoa Jurídica";
   cpfCnpj?: string;
   valorTotal?: number;
@@ -15,6 +16,7 @@ export interface NovoClienteData {
   email: string;
   telefone: string;
   endereco: string;
+  bairro?: string;
   tipo: "Pessoa Física" | "Pessoa Jurídica";
   cpfCnpj?: string;
 }
