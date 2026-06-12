@@ -9,6 +9,10 @@ import Dashboard from "./pages/Dashboard";
 import Obras from "./pages/Obras";
 import ObraDetalhes from "./pages/ObraDetalhes";
 import Clientes from "./pages/Clientes";
+import Funcionarios from "./pages/Funcionarios";
+import FolhaSemanal from "./pages/FolhaSemanal";
+import NotasFiscais from "./pages/NotasFiscais";
+import Financeiro from "./pages/Financeiro";
 import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
@@ -28,6 +32,10 @@ const App = () => (
               <Route path="obras" element={<Obras />} />
               <Route path="obras/:id" element={<ObraDetalhes />} />
               <Route path="clientes" element={<Clientes />} />
+              <Route path="funcionarios" element={<Funcionarios />} />
+              <Route path="folha-semanal" element={<FolhaSemanal />} />
+              <Route path="notas-fiscais" element={<NotasFiscais />} />
+              <Route path="financeiro" element={<Financeiro />} />
               <Route path="relatorios" element={<Relatorios />} />
               <Route path="configuracoes" element={<Configuracoes />} />
             </Route>
