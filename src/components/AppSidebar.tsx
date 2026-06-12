@@ -10,47 +10,53 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { 
-  LayoutDashboard, 
-  HardHat, 
-  Users, 
+import {
+  LayoutDashboard,
+  HardHat,
+  Users,
   Building2,
   TrendingUp,
-  Settings
+  Settings,
+  CalendarRange,
+  UserCog,
+  FileText,
+  Wallet,
 } from "lucide-react";
 
-const menuItems = [
-  { 
-    title: "Dashboard", 
-    url: "/", 
-    icon: LayoutDashboard 
+const menuGroups = [
+  {
+    label: "Operação",
+    items: [
+      { title: "Dashboard", url: "/", icon: LayoutDashboard },
+      { title: "Obras", url: "/obras", icon: HardHat },
+      { title: "Clientes", url: "/clientes", icon: Users },
+    ],
   },
-  { 
-    title: "Obras", 
-    url: "/obras", 
-    icon: HardHat 
+  {
+    label: "RH / Mão de obra",
+    items: [
+      { title: "Funcionários", url: "/funcionarios", icon: UserCog },
+      { title: "Folha Semanal", url: "/folha-semanal", icon: CalendarRange },
+    ],
   },
-  { 
-    title: "Clientes", 
-    url: "/clientes", 
-    icon: Users 
+  {
+    label: "Financeiro",
+    items: [
+      { title: "Notas Fiscais", url: "/notas-fiscais", icon: FileText },
+      { title: "Financeiro", url: "/financeiro", icon: Wallet },
+      { title: "Relatórios", url: "/relatorios", icon: TrendingUp },
+    ],
   },
-  { 
-    title: "Relatórios", 
-    url: "/relatorios", 
-    icon: TrendingUp 
-  },
-  { 
-    title: "Configurações", 
-    url: "/configuracoes", 
-    icon: Settings 
+  {
+    label: "Sistema",
+    items: [{ title: "Configurações", url: "/configuracoes", icon: Settings }],
   },
 ];
 
 export function AppSidebar() {
   const location = useLocation();
   const { open } = useSidebar();
-  
+
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
@@ -74,38 +80,37 @@ export function AppSidebar() {
           </div>
         </div>
 
-        <SidebarGroup className="px-2 py-4">
-          <SidebarGroupLabel>
-            Menu Principal
-          </SidebarGroupLabel>
-          
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => {
-                const active = isActive(item.url);
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={item.url}
-                        className={`
-                          flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
-                          ${active 
-                            ? "bg-primary text-primary-foreground shadow-md" 
-                            : "hover:bg-accent hover:text-accent-foreground"
-                          }
-                        `}
-                      >
-                        <item.icon className="h-5 w-5" />
-                        {open && <span className="font-medium">{item.title}</span>}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {menuGroups.map((group) => (
+          <SidebarGroup key={group.label} className="px-2 py-2">
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const active = isActive(item.url);
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <NavLink
+                          to={item.url}
+                          className={`
+                            flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
+                            ${active
+                              ? "bg-primary text-primary-foreground shadow-md"
+                              : "hover:bg-accent hover:text-accent-foreground"
+                            }
+                          `}
+                        >
+                          <item.icon className="h-5 w-5" />
+                          {open && <span className="font-medium">{item.title}</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
     </Sidebar>
   );
